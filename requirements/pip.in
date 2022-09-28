@@ -1,6 +1,6 @@
 # Core dependencies for installing other packages
 -c constraints.txt
 
-pip
+pip==22.2.2
 setuptools
 wheel
