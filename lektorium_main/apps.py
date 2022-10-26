@@ -11,3 +11,4 @@ class LektoriumMainConfig(AppConfig):
     """
 
     name = 'lektorium_main'
+    verbose_name = 'Lektorium main app'

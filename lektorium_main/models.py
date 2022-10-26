@@ -7,6 +7,7 @@ from django.urls import reverse
 from polymorphic.models import PolymorphicModel
 
 from .core.models import BaseModel
+from .courses.models import *
 
 
 class Profile(PolymorphicModel, BaseModel):

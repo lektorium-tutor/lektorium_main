@@ -1,7 +1,20 @@
+import uuid
+
 from django.db import models
+from django_mysql.models import SetCharField
 from polymorphic.models import PolymorphicModel
 
 from lektorium_main.models import BaseModel
+
+
+class Tag(BaseModel):
+    """
+    id: string (uuid) "id тега"
+    name: string "Наименование тега"
+    parentId: string (uuid) "id родительского тэга" null=True
+    """
+    name = models.CharField("Наименование тега", max_length=255)
+    parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Course(PolymorphicModel, BaseModel):
@@ -41,22 +54,63 @@ class Course(PolymorphicModel, BaseModel):
         (2, "Тема"),
         (3, "Учебный материал")
     )
-    courseName = models.CharField("Название учебного материала", blank=False, null=False)
+    externalId = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
     courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
 
 class COK(Course):
-    courseTypeId = 0
+    @property
+    def courseTypeId(self):
+        return 0
+
     courseImageFile = models.ImageField("Файл изображения",
-                                        help_text="Изображение не должно содержать никаких надписей." \
-                                                  "Разрешение - 600x600 пикселей (допускается 500х500). Формат – jpg, jpeg, png." \
-                                                  " Размер – не более 5Мб.",
+                                        help_text="Изображение не должно содержать никаких надписей. "
+                                                  "Разрешение - 600x600 пикселей (допускается 500х500). "
+                                                  "Формат – jpg, jpeg, png. Размер – не более 5Мб.",
                                         blank=False, null=False)
     externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
     courseDescription = models.TextField("Описание учебного материала", blank=False, null=False)
+    grades = SetCharField(
+        verbose_name="Массив классов, которым доступен учебный материал",
+        base_field=models.PositiveSmallIntegerField(),
+        size=16,
+        max_length=(9 + 7 * 2),  # 1..16
+    )
+    tags = models.ManyToManyField(Tag)
+
+
+class Section(Course):
+    @property
+    def courseTypeId(self):
+        return 1
+
+    externalParent = models.ForeignKey(Course, related_name="sections", blank=False, null=False,
+                                       on_delete=models.CASCADE)
+
+
+class Topic(Course):
+    @property
+    def courseTypeId(self):
+        return 2
+
+    externalParent = models.ForeignKey(Course, related_name="topics", blank=False, null=False,
+                                       on_delete=models.CASCADE)
 
 
 class EducationalCourse(Course):
-    courseTypeId = 3
+    @property
+    def courseTypeId(self):
+        return 3
+
     externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
     courseDescription = models.TextField("Описание учебного материала", blank=False, null=False)
+    externalParent = models.ForeignKey(Course, related_name="educational_courses", blank=False, null=False,
+                                       on_delete=models.CASCADE)
+    grades = SetCharField(
+        verbose_name="Массив классов, которым доступен учебный материал",
+        base_field=models.PositiveSmallIntegerField(),
+        size=16,
+        max_length=(9 + 7 * 2),  # 1..16
+    )
+    tags = models.ManyToManyField(Tag)
