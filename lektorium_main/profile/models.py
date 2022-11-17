@@ -20,8 +20,9 @@ class Profile(PolymorphicModel, BaseModel):
         STUDENT = 'STUDENT',
 
     # Relationships
-    educationalInstitutions = models.ForeignKey('Данные об образовательных учреждениях пользователя',
-                                                "lektorium_main.EducationalInstitutions", on_delete=models.SET_NULL,
+    educationalInstitutions = models.ForeignKey("lektorium_main.EducationalInstitutions",
+                                                verbose_name ='Данные об образовательных учреждениях пользователя',
+                                                on_delete=models.SET_NULL,
                                                 null=True, blank=True)
 
     # Fields
