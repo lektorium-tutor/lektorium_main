@@ -2,7 +2,8 @@ import logging
 from ninja import NinjaAPI, ModelSchema
 from ninja.security import django_auth
 from django.contrib.auth.models import User
-from lektorium_main.profile.models import (Profile, TeacherProfile, StudentProfile)
+from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile
+from ninja.orm import create_schema
 
 api = NinjaAPI(csrf=True)
 log = logging.getLogger(__name__)

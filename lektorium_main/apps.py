@@ -15,7 +15,7 @@ class LektoriumMainConfig(AppConfig):
     verbose_name = 'Lektorium main app'
 
 
-class LEKTAdminConfig(AdminConfig):
-    # default_site = 'umnoc.admin.UMNOCAdminSite'
-    name = 'lektorium_main.admin.LEKTAdminSite'
-    label = 'lekt_admin'
+# class LEKTAdminConfig(AdminConfig):
+#     # default_site = 'umnoc.admin.UMNOCAdminSite'
+#     name = 'lektorium_main.courses.admin.LEKTAdminSite'
+#     label = 'lekt_admin'
