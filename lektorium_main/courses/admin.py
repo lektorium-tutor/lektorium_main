@@ -3,26 +3,33 @@ from django.contrib import admin
 from lektorium_main.courses.models import Tag, COK, Section, Topic, EducationalCourse
 
 
-@admin.register(Tag)
+class LEKTAdminSite(admin.AdminSite):
+    site_header = _('LEKT administration')
+
+
+lekt_admin_site = LEKTAdminSite(name='lekt_admin')
+
+
+@admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
     list_display = ('name')
 
 
-@admin.register(COK)
+@admin.register(COK, site=lekt_admin_site)
 class COK(admin.ModelAdmin):
     list_display = ('courseTypeId', 'courseName')
 
 
-@admin.register(Section)
+@admin.register(Section, site=lekt_admin_site)
 class Section(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
 
 
-@admin.register(Topic)
+@admin.register(Topic, site=lekt_admin_site)
 class Topic(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
 
 
-@admin.register(EducationalCourse)
+@admin.register(EducationalCourse, site=lekt_admin_site)
 class Topic(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
