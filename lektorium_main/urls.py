@@ -5,8 +5,8 @@ from django.urls import re_path  # pylint: disable=unused-import
 from django.views.generic import TemplateView  # pylint: disable=unused-import
 from django.conf.urls import url, include
 
-from .api import api
-from .admin import lekt_admin_site
+from lektorium_main.api import api
+from lektorium_main.courses.admin import lekt_admin_site
 
 urlpatterns = [
     # TODO: Fill in URL patterns and views here.

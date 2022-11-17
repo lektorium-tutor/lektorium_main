@@ -1,11 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from polymorphic.models import PolymorphicModel
-from django.contrib.auth import get_user_model
 
-from .core.models import BaseModel
-from .courses.models import *
+from lektorium_main.core.models import BaseModel
+from lektorium_main.courses.models import *
 
 
 class Profile(PolymorphicModel, BaseModel):
