@@ -7,7 +7,7 @@ import json
 
 
 class CokOAuth2(BaseOAuth2):
-    name = 'sso_cok-oauth2'
+    name = 'cok'
     ID_KEY = 'lektorium'
     AUTHORIZATION_URL = 'https://sso.preprod.educont.ru/oauth/authorize'  # '{}/oauth2/authorize'.format(settings.SSO_ROO_URL)
     ACCESS_TOKEN_URL = 'https://sso.preprod.educont.ru/api/external/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
