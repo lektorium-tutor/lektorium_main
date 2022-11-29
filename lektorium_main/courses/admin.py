@@ -15,8 +15,8 @@ lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 @admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
     list_display = ('name', )
-    list_display = ('name',)
-    autocomplete_fields = ["parent", ]
+    # list_display = ('name',)
+    # autocomplete_fields = ["parent", ]
 
 
 @admin.register(COK, site=lekt_admin_site)
@@ -27,7 +27,7 @@ class COK(admin.ModelAdmin):
 @admin.register(Section, site=lekt_admin_site)
 class Section(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
-    autocomplete_fields = ["externalParent", ]
+    # autocomplete_fields = ["externalParent", ]
 
 
 @admin.register(Topic, site=lekt_admin_site)
