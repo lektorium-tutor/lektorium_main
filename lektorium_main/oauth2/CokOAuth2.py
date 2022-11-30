@@ -9,8 +9,8 @@ import json
 class CokOAuth2(BaseOAuth2):
     name = 'cok'
     ID_KEY = 'lektorium'
-    AUTHORIZATION_URL = 'https://sso.preprod.educont.ru/oauth/authorize'  # '{}/oauth2/authorize'.format(settings.SSO_ROO_URL)
-    ACCESS_TOKEN_URL = 'https://sso.preprod.educont.ru/api/external/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
+    AUTHORIZATION_URL = 'https://dev.educont.ru/oauth/authorize'  # '{}/oauth2/authorize'.format(settings.SSO_ROO_URL)
+    ACCESS_TOKEN_URL = 'https://dev.educont.ru/api/external/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
     DEFAULT_SCOPE = []
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -35,7 +35,7 @@ class CokOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.pop('response')
-        return self.get_json('https://sso.preprod.educont.ru/api/external/v1/profile', headers={
+        return self.get_json('https://dev.educont.ru/api/external/v1/profile', headers={
             'Authorization': '{0} {1}'.format(response.get('token_type'),
                                               access_token)
         })
