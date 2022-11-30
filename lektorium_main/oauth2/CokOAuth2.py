@@ -7,11 +7,11 @@ import json
 
 
 class CokOAuth2(BaseOAuth2):
-    name = 'cok'
+    name = 'educont'
     ID_KEY = 'lektorium'
     AUTHORIZATION_URL = 'https://dev.educont.ru/oauth/authorize'  # '{}/oauth2/authorize'.format(settings.SSO_ROO_URL)
     ACCESS_TOKEN_URL = 'https://dev.educont.ru/api/external/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
-    DEFAULT_SCOPE = []
+    DEFAULT_SCOPE = ["external_system.read"]
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
     SCOPE_SEPARATOR = ' '
