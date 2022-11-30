@@ -15,6 +15,7 @@ lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 @admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
     list_display = ('name', )
+    search_fields = ('name', )
     # list_display = ('name',)
     # autocomplete_fields = ["parent", ]
 
