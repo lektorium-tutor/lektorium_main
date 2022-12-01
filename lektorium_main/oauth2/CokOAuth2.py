@@ -35,7 +35,7 @@ class CokOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         response = kwargs.pop('response')
-        return self.get_json('https://dev.educont.ru/api/external/v1/profile', headers={
+        return self.get_json('https://dev.educont.ru/api/external/v1/profile',method="POST", headers={
             'Authorization': '{0} {1}'.format(response.get('token_type'),
                                               access_token)
         })
