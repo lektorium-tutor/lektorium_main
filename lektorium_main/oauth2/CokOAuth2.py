@@ -65,6 +65,10 @@ class CokOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     SEND_USER_AGENT = True
 
+    def state_token(self):
+        """Generate csrf token to include as state parameter."""
+        return self.strategy.random_string(8)
+
     def api_url(self):
         return self.API_URL
 
