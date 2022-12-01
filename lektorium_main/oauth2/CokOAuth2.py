@@ -4,6 +4,7 @@ import os
 import time
 import hashlib
 import json
+import logging
 
 
 class CokOAuth2(BaseOAuth2):
@@ -17,6 +18,7 @@ class CokOAuth2(BaseOAuth2):
     SCOPE_SEPARATOR = ' '
 
     def get_user_details(self, response):
+        logging.warning(response)
         nickname = response.get('login') or ''
         fullname, name, surname, middleName = self.get_user_names(
             fullname=response.get('fullName'),
@@ -34,6 +36,7 @@ class CokOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token, *args, **kwargs):
+        logging.warning(kwargs.pop('response'))
         response = kwargs.pop('response')
         return self.get_json('https://dev.educont.ru/api/external/v1/profile',method="POST", headers={
             'Authorization': '{0} {1}'.format(response.get('token_type'),
