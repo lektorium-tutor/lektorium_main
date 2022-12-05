@@ -7,4 +7,4 @@ django-ninja
 orjson
 django-polymorphic
 social-auth-core
-sentry-sdk
+
