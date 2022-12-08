@@ -3,11 +3,32 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from polymorphic.models import PolymorphicModel
+from django.contrib.auth.models import User
 from django.db.models.signals import post_save
-from lektorium_main.profile.signals import create_user_profile, save_user_profile
+from django.dispatch import receiver
+import logging
 
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import *
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    logging.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    logging.warning(instance)
+    if created:
+        Profile.objects.create(user=instance)
+
+
+post_save.connect(create_user_profile, sender=User)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+
+post_save.connect(save_user_profile, sender=User)
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -23,7 +44,7 @@ class Profile(PolymorphicModel, BaseModel):
 
     # Relationships
     educationalInstitutions = models.ForeignKey("lektorium_main.EducationalInstitutions",
-                                                verbose_name ='Данные об образовательных учреждениях пользователя',
+                                                verbose_name='Данные об образовательных учреждениях пользователя',
                                                 on_delete=models.SET_NULL,
                                                 null=True, blank=True)
 
@@ -57,9 +78,6 @@ class Profile(PolymorphicModel, BaseModel):
 
     def get_update_url(self):
         return reverse("lektorium_main_Profile_update", args=(self.pk,))
-
-    post_save.connect(create_user_profile, sender=get_user_model())
-    post_save.connect(save_user_profile, sender=get_user_model())
 
 
 class EducationalInstitution(BaseModel):
