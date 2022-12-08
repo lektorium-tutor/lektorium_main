@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from polymorphic.models import PolymorphicModel
+from django.db.models.signals import post_save
+from lektorium_main.profile.signals import create_user_profile, save_user_profile
 
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import *
@@ -55,6 +57,9 @@ class Profile(PolymorphicModel, BaseModel):
 
     def get_update_url(self):
         return reverse("lektorium_main_Profile_update", args=(self.pk,))
+
+    post_save.connect(create_user_profile, sender=get_user_model())
+    post_save.connect(save_user_profile, sender=get_user_model())
 
 
 class EducationalInstitution(BaseModel):
