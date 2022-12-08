@@ -29,7 +29,7 @@ class CokOAuth2(BaseOAuth2):
 
     def get_user_details(self, response):
         logging.warning(response)
-        nickname = response.get('login') or ''
+        nickname = response.get('login').split('@')[0] or ''
         fullname = response.get('fullName')
         name = response.get('name')
         surname = response.get('surname')
@@ -51,6 +51,5 @@ class CokOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         return self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
-            'Authorization': '{0} {1}'.format(self.TOKEN_TYPE,
-                                              access_token)
+            'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })

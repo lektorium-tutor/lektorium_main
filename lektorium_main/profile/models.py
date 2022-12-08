@@ -17,7 +17,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     logging.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     logging.warning(instance)
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(user=instance, isActive=instance.profile.isActive)
 
 
 post_save.connect(create_user_profile, sender=User)
