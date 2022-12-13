@@ -4,6 +4,7 @@ import os
 import time
 import hashlib
 import json
+import requests
 import logging
 
 
@@ -46,10 +47,33 @@ class CokOAuth2(BaseOAuth2):
             'email': email,
             'fullname': fullname,
             'first_name': name,
-            'last_name': surname
+            'last_name': surname,
+            # 'profile': {
+            #     'isActive': response.get('isActive'),
+            #     'role': response.get('role'),
+            #     'statusConfirmEmail': response.get('statusConfirmEmail'),
+            # }
         }
 
+    # def get_user_profile(self):
+    #     self.backend.save_profile(
+
+    #     )
+
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
+        res = self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
             'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })
+        # response = {
+        #     'isActive': res.get('isActive'),
+        #     'role': res.get('role'),
+        #     'statusConfirmEmail': res.get('statusConfirmEmail'),
+        #     'nickname': res.get('login').split('@')[0] or '',
+        #     'fullname': res.get('fullName'),
+        #     'name': res.get('name'),
+        #     'surname': res.get('surname'),
+        #     'middleName': res.get('middleName'),
+        #     'email': res.get('email')
+        # }
+        # self.backend.save_profile(response)
+        return res

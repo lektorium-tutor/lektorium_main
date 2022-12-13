@@ -3,6 +3,13 @@ import logging
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from django.conf import settings
+from openedx.features.enterprise_support.api import insert_enterprise_pipeline_elements
+
+def apply_settings(django_settings):
+    django_settings.SOCIAL_AUTH_PIPELINE += ['lektorium_main.oauth2.pipeline.profile.save_profile', ]
+    
+    insert_enterprise_pipeline_elements(django_settings.SOCIAL_AUTH_PIPELINE)
 
 sentry_sdk.init(
     dsn='https://39b89a1b7ec546f4978f0d4c0f828ee4@sentry.urfu.online/9',
@@ -17,3 +24,7 @@ sentry_sdk.init(
     },
     send_default_pii=True
 )
+
+# SOCIAL_AUTH_PIPELINE = ['lektorium_main.oauth2.pipeline.profile.save_profile', ]
+
+# insert_enterprise_pipeline_elements(SOCIAL_AUTH_PIPELINE)
