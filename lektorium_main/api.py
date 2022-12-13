@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile
 from ninja.orm import create_schema
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseServerError
 
 api = NinjaAPI(csrf=True)
 log = logging.getLogger(__name__)
@@ -56,13 +58,30 @@ UserProfileSchema = create_schema(
 
 @api.get("/me", auth=django_auth, response=UserProfileSchema)
 def me(request):
-    user = User.objects.get(username=request.auth)
-    profile = Profile.objects.get(user=user)
-    return profile
+    try:
+        user = get_object_or_404(User, username=request.auth)
+        profile = get_object_or_404(Profile, user=user)
+        return profile
+    except:
+        return HttpResponseServerError()
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
-    profile = get_object_or_404(Profile, id=profile_id)
-    profile.delete()
-    return {"success": True}
+    try:
+        if (User.objects.get(username=request.auth).is_superuser):
+            profile = get_object_or_404(Profile, id=profile_id)
+            profile.delete()
+            return {"success": True}
+        else:
+            raise PermissionDenied()
+    except:
+        pass
 
+# api.put("/me", auth=django_auth)
+# def update_me(request):
+#     try:
+#         user = get_object_or_404(User, username=request.auth)
+#         profile = get_object_or_404(Profile, user=user)
+#         Profile.objects.update()
+#     except:
+#         return HttpResponseServerError()

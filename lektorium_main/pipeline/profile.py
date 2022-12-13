@@ -1,29 +1,36 @@
 from lektorium_main.profile.models import (Profile, TeacherProfile, StudentProfile)
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+import logging
+
+PROFILE_FIELDS = ['user', 'role', 'isActive', 'statusConfirmEmail', 'login', 'fullName', 'name', 'surname', 'middleName',
+                  'email']
 
 
-def save_profile(backend, user, response, *args, **kwargs):
+def create(backend, user, response, *args, **kwargs):
     if backend.name == 'educont':
-        role = response.get('role')
-        data = {
-            'isActive': response.get('isActive'),
-            'role': response.get('role'),
-            'statusConfirmEmail': response.get('statusConfirmEmail'),
-            'nickname': response.get('login').split('@')[0] or '',
-            'fullname': response.get('fullName'),
-            'name': response.get('name'),
-            'surname': response.get('surname'),
-            'middleName': response.get('middleName'),
-            'email': response.get('email')
-        }
-        try:
-            profile = Profile.objects.get(user=user.id)
-        except:
-            profile = None
-        if profile is None:
-            if role == 'STUDENT':
-                data['user'] = user.id
-                profile = StudentProfile.objects.create(data)
-            else:
-                data['user'] = user.id
-                profile = TeacherProfile.objects.create(data)
-        profile.save()
+        logging.warning("Educont profile create or pass")
+        fields = dict(
+            (name, kwargs.get(name, response.get(name))) for name in backend.setting('PROFILE_FIELDS', PROFILE_FIELDS))
+        fields['login'] = fields['login'].split('@')[0] or ''
+        fields['user'] = user
+        if kwargs['is_new']:
+            if fields['role'] == 'STUDENT':
+                StudentProfile.objects.create(**fields)
+            elif fields['role'] == 'TEACHER':
+                TeacherProfile.objects.create(**fields)
+
+def update(backend, user, response, *args, **kwargs):
+    if backend.name == 'educont':
+        logging.warning("Educont profile update")
+        fields = dict(
+            (name, kwargs.get(name, response.get(name))) for name in backend.setting('PROFILE_FIELDS', PROFILE_FIELDS))
+        fields['login'] = fields['login'].split('@')[0] or ''
+        fields['user'] = user
+        if kwargs['is_new'] is False:
+            if fields['role'] == 'STUDENT':
+                profile = StudentProfile.objects.get(user=user)
+                profile.update(**fields)
+            elif fields['role'] == 'TEACHER':
+                profile = TeacherProfile.objects.get(user=user)
+                profile.update(**fields)

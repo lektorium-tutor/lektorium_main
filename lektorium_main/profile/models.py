@@ -12,27 +12,27 @@ from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import *
 
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    logging.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    # logging.warning(dir(instance))
-    # social = instance.social_auth
-    # logging.warning(social)
-    # profile = instance.profile
-    # logging.warning(profile)
-    # if created:
-    #     Profile.objects.create(user=instance, isActive=instance.profile.isActive)
-
-
-post_save.connect(create_user_profile, sender=User)
-
-
 # @receiver(post_save, sender=User)
-# def save_user_profile(sender, instance, **kwargs):
-#     instance.profile.save()
-
-
-# post_save.connect(save_user_profile, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     logging.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! @@@@@@@@@@@@@@@@@@")
+#     # logging.warning(dir(instance))
+#     # social = instance.social_auth
+#     # logging.warning(social)
+#     # profile = instance.profile
+#     # logging.warning(profile)
+#     # if created:
+#     #     Profile.objects.create(user=instance, isActive=instance.profile.isActive)
+#
+#
+# post_save.connect(create_user_profile, sender=User)
+#
+#
+# # @receiver(post_save, sender=User)
+# # def save_user_profile(sender, instance, **kwargs):
+# #     instance.profile.save()
+#
+#
+# # post_save.connect(save_user_profile, sender=User)
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -82,6 +82,14 @@ class Profile(PolymorphicModel, BaseModel):
 
     def get_update_url(self):
         return reverse("lektorium_main_Profile_update", args=(self.pk,))
+
+    def update(self,*args, **kwargs):
+            for name,values in kwargs.items():
+                try:
+                    setattr(self,name,values)
+                except KeyError:
+                    pass
+            self.save()
 
 
 class EducationalInstitution(BaseModel):
@@ -135,10 +143,14 @@ class EducationalInstitution(BaseModel):
     def get_update_url(self):
         return reverse("lektorium_main_EducationalInstitution_update", args=(self.pk,))
 
+    @classmethod
+    def update(cls, user):
+        profile = cls(user=user)
+        return profile
 
 class EducationalInstitutions(BaseModel):
     # Relationships
-    educationalInstitution = models.ForeignKey("lektorium_main.EducationalInstitution", on_delete=models.CASCADE)
+    educationalInstitution = models.ForeignKey("lektorium_main.EducationalInstitution", on_delete=models.CASCADE, blank=True, null=True)
 
     # Fields
     approvedStatus = models.CharField(max_length=50)
@@ -159,7 +171,7 @@ class EducationalInstitutions(BaseModel):
 
 class StudentProfile(Profile):
     studentGradeEducationalInstitutions = models.ForeignKey("lektorium_main.StudentTagEducationalInstitutions",
-                                                            on_delete=models.CASCADE)
+                                                            on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         pass
@@ -176,7 +188,7 @@ class StudentProfile(Profile):
 
 class TeacherProfile(Profile):
     teacherTagEducationalInstitutions = models.ForeignKey("lektorium_main.TeacherTagEducationalInstitutions",
-                                                          on_delete=models.CASCADE)
+                                                          on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         pass
@@ -194,7 +206,7 @@ class TeacherProfile(Profile):
 class TeacherTagEducationalInstitutions(BaseModel):
     tagId = models.CharField(max_length=100, blank=True, null=True)
     gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitutions",
-                                                     on_delete=models.CASCADE)
+                                                     on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         pass
@@ -206,7 +218,7 @@ class TeacherTagEducationalInstitutions(BaseModel):
 class StudentTagEducationalInstitutions(BaseModel):
     tagId = models.CharField(max_length=100, blank=True, null=True)
     gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitutions",
-                                                     on_delete=models.CASCADE)
+                                                     on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         pass
@@ -218,7 +230,7 @@ class StudentTagEducationalInstitutions(BaseModel):
 class GradeEducationalInstitutions(BaseModel):
     educationalInstitutionId = models.UUIDField(editable=False, unique=True)
     letter = models.CharField(max_length=10, blank=True, null=True)
-    grade = models.ForeignKey("lektorium_main.Grade", on_delete=models.CASCADE)
+    grade = models.ForeignKey("lektorium_main.Grade", on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         pass

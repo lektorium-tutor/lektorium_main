@@ -64,16 +64,4 @@ class CokOAuth2(BaseOAuth2):
         res = self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
             'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })
-        # response = {
-        #     'isActive': res.get('isActive'),
-        #     'role': res.get('role'),
-        #     'statusConfirmEmail': res.get('statusConfirmEmail'),
-        #     'nickname': res.get('login').split('@')[0] or '',
-        #     'fullname': res.get('fullName'),
-        #     'name': res.get('name'),
-        #     'surname': res.get('surname'),
-        #     'middleName': res.get('middleName'),
-        #     'email': res.get('email')
-        # }
-        # self.backend.save_profile(response)
         return res
