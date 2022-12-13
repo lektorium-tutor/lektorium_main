@@ -34,34 +34,16 @@ class CokOAuth2(BaseOAuth2):
         fullname = response.get('fullName')
         name = response.get('name')
         surname = response.get('surname')
-        middleName = response.get('middleName')
         email = response.get('email')
-        logging.warning({
-            'username': nickname,
-            'email': email,
-            'fullname': fullname,
-            'first_name': name,
-            'last_name': surname})
         return {
             'username': nickname,
             'email': email,
             'fullname': fullname,
             'first_name': name,
             'last_name': surname,
-            # 'profile': {
-            #     'isActive': response.get('isActive'),
-            #     'role': response.get('role'),
-            #     'statusConfirmEmail': response.get('statusConfirmEmail'),
-            # }
         }
 
-    # def get_user_profile(self):
-    #     self.backend.save_profile(
-
-    #     )
-
     def user_data(self, access_token, *args, **kwargs):
-        res = self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
+        return self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
             'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })
-        return res
