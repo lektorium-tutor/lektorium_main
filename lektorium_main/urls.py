@@ -6,7 +6,7 @@ from django.views.generic import TemplateView  # pylint: disable=unused-import
 from django.conf.urls import url, include
 
 from lektorium_main.api import api
-from lektorium_main.courses.admin import lekt_admin_site
+from .admin import lekt_admin_site
 
 from .courses.views import MatchingMaterialsView
 

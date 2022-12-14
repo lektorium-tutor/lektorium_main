@@ -29,18 +29,19 @@ class CokOAuth2(BaseOAuth2):
         return self.API_URL
 
     def get_user_details(self, response):
-        logging.warning(response)
         nickname = response.get('login').split('@')[0] or ''
         fullname = response.get('fullName')
         name = response.get('name')
         surname = response.get('surname')
         email = response.get('email')
+        isActive = response.get('isActive')
         return {
             'username': nickname,
             'email': email,
             'fullname': fullname,
             'first_name': name,
             'last_name': surname,
+            'is_active': isActive
         }
 
     def user_data(self, access_token, *args, **kwargs):

@@ -8,6 +8,7 @@ from django.conf import settings
 def apply_settings(django_settings):
     django_settings.SOCIAL_AUTH_PIPELINE += ['lektorium_main.pipeline.profile.create', ]
 
+
 sentry_sdk.init(
     dsn='https://39b89a1b7ec546f4978f0d4c0f828ee4@sentry.urfu.online/9',
     integrations=[DjangoIntegration(),

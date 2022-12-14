@@ -70,6 +70,7 @@ class Profile(PolymorphicModel, BaseModel):
 
     user = models.OneToOneField(get_user_model(), unique=True, db_index=True, related_name='verified_profile',
                                 verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
+    profile_id = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:
         pass
@@ -174,7 +175,8 @@ class StudentProfile(Profile):
                                                             on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        pass
+        verbose_name = 'Профиль студента'
+        verbose_name_plural = 'Профили студентов'
 
     def __str__(self):
         return str(self.pk)
@@ -191,7 +193,8 @@ class TeacherProfile(Profile):
                                                           on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        pass
+        verbose_name = 'Профиль преподавателя'
+        verbose_name_plural = 'Профили преподавателей'
 
     def __str__(self):
         return str(self.pk)

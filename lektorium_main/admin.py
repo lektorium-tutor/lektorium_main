@@ -1,16 +1,27 @@
 # TODO: create admin and check models viability
 from django.contrib import admin
 from lektorium_main.courses.models import Tag, COK, Section, Topic, EducationalCourse
-from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile
+from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile, EducationalInstitution
 from django.utils.translation import ugettext_lazy as _
 
 
 class LEKTAdminSite(admin.AdminSite):
     site_header = _('LEKT administration')
 
-
 lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 
+
+@admin.register(StudentProfile, site=lekt_admin_site)
+class StudentProfile(admin.ModelAdmin):
+    list_display = ('name', )
+
+@admin.register(TeacherProfile, site=lekt_admin_site)
+class TeacherProfile(admin.ModelAdmin):
+    list_display = ('name', )
+
+@admin.register(EducationalInstitution, site=lekt_admin_site)
+class EducationalInstitution(admin.ModelAdmin):
+    list_display = ('shortName', )
 
 @admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
@@ -37,10 +48,5 @@ class Topic(admin.ModelAdmin):
 
 
 @admin.register(EducationalCourse, site=lekt_admin_site)
-class Topic(admin.ModelAdmin):
-    list_display = ('externalId', 'courseTypeId', 'courseName')
-
-
-@admin.register(Profile, site=lekt_admin_site)
-class Topic(admin.ModelAdmin):
-    list_display = ('name', )
+class EducationalCourse(admin.ModelAdmin):
+    pass

@@ -4,6 +4,7 @@ lektorium_main Django application initialization.
 
 from django.apps import AppConfig
 from django.conf import settings
+from django.contrib.admin import apps
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -26,7 +27,8 @@ class LektoriumMainConfig(AppConfig):
         from lektorium_main import settings as auth_settings
         auth_settings.apply_settings(settings)
 
-# class LEKTAdminConfig(AdminConfig):
+
+# class LEKTAdminConfig(apps.AdminConfig):
 #     # default_site = 'umnoc.admin.UMNOCAdminSite'
-#     name = 'lektorium_main.courses.admin.LEKTAdminSite'
+#     name = 'lektorium_main.admin.LEKTAdminSite'
 #     label = 'lekt_admin'
