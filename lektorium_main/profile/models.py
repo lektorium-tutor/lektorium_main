@@ -10,29 +10,35 @@ import logging
 
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import *
+from django.contrib.auth.signals import user_logged_in
+
+# @receiver(post_save, sender=User)
+def is_verefication_educont_profile(user):
+    if user.is_superuser or user.is_staff:
+        return True
+    
+    profile = Profile.get_poly_user(user)
+    if profile.isActive == False or profile.educationalInstitutions.approvedStatus != 'APPROVED' or profile.educationalInstitutions.isActual == False or profile.educationalInstitutions.educationalInstitution:
+        return False
+    else:
+        return True
+    # social = instance.social_auth
+    # logging.warning(social)
+    # profile = instance.profile
+    # logging.warning(profile)
+    # if created:
+    #     Profile.objects.create(user=instance, isActive=instance.profile.isActive)
+
+
+# post_save.connect(create_user_profile, sender=User)
 
 
 # @receiver(post_save, sender=User)
-# def create_user_profile(sender, instance, created, **kwargs):
-#     logging.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! @@@@@@@@@@@@@@@@@@")
-#     # logging.warning(dir(instance))
-#     # social = instance.social_auth
-#     # logging.warning(social)
-#     # profile = instance.profile
-#     # logging.warning(profile)
-#     # if created:
-#     #     Profile.objects.create(user=instance, isActive=instance.profile.isActive)
-#
-#
+# def save_user_profile(sender, instance, **kwargs):
+#     instance.profile.save()
+
+
 # post_save.connect(create_user_profile, sender=User)
-#
-#
-# # @receiver(post_save, sender=User)
-# # def save_user_profile(sender, instance, **kwargs):
-# #     instance.profile.save()
-#
-#
-# # post_save.connect(save_user_profile, sender=User)
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -92,6 +98,11 @@ class Profile(PolymorphicModel, BaseModel):
                     pass
             self.save()
 
+    @classmethod
+    def get_poly_user(cls, user):
+        if cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists():
+            return cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).first()
+
 
 class EducationalInstitution(BaseModel):
     """
@@ -112,6 +123,7 @@ class EducationalInstitution(BaseModel):
     postIndex = models.CharField('Индекс образовательной организации', max_length=6,
                                  validators=[RegexValidator('^[0-9]{6}$', 'Invalid postal code')],
                                  )
+    schoolName = models.TextField('Наименование школы', blank=True, null=True)
     street = models.CharField('Улица образовательной организации', max_length=30)
     address = models.TextField('Полный адрес образовательной организации')
     locality = models.CharField('Город образовательной организации', max_length=100)
@@ -125,7 +137,7 @@ class EducationalInstitution(BaseModel):
                                                   choices=TypeEducationalInstitution.choices)
 
     @property
-    def schoolName(self):
+    def schoolNameCustom(self):
         """
         Краткое наименование+полный адрес образовательной организации
         """
@@ -134,9 +146,12 @@ class EducationalInstitution(BaseModel):
     class Meta:
         verbose_name = 'данные об образовательном учреждении'
         verbose_name_plural = 'данные об образовательных учреждениях'
-
+    
     def __str__(self):
-        return f'{self.get_typeEducationalInstitution_display()} {self.schoolName}'
+        return str(self.pk)
+
+    # def __str__(self):
+    #     return f'{self.get_typeEducationalInstitution_display()} {self.schoolNameCustom}'
 
     def get_absolute_url(self):
         return reverse("lektorium_main_EducationalInstitution_detail", args=(self.pk,))

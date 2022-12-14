@@ -34,14 +34,12 @@ class CokOAuth2(BaseOAuth2):
         name = response.get('name')
         surname = response.get('surname')
         email = response.get('email')
-        isActive = response.get('isActive')
         return {
             'username': nickname,
             'email': email,
             'fullname': fullname,
             'first_name': name,
             'last_name': surname,
-            'is_active': isActive
         }
 
     def user_data(self, access_token, *args, **kwargs):
