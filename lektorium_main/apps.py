@@ -3,6 +3,7 @@ lektorium_main Django application initialization.
 """
 
 from django.apps import AppConfig
+from django.conf import settings
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -17,9 +18,13 @@ class LektoriumMainConfig(AppConfig):
     name = 'lektorium_main'
     verbose_name = 'Lektorium main app'
 
-    # def ready(self):
-    #     post_save.connect(create_user_profile, sender=User)
-    #     post_save.connect(save_user_profile, sender=User)
+    def ready(self):
+        if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
+            self._enable_lek_main()
+    
+    def _enable_lek_main(self):
+        from lektorium_main import settings as auth_settings
+        auth_settings.apply_settings(settings)
 
 # class LEKTAdminConfig(AdminConfig):
 #     # default_site = 'umnoc.admin.UMNOCAdminSite'
