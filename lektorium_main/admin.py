@@ -1,7 +1,7 @@
 # TODO: create admin and check models viability
 from django.contrib import admin
 from lektorium_main.courses.models import Tag, COK, Section, Topic, EducationalCourse
-from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions
+from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions, StatusMessage
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -25,7 +25,11 @@ class EducationalInstitution(admin.ModelAdmin):
 
 @admin.register(EducationalInstitutions, site=lekt_admin_site)
 class EducationalInstitutions(admin.ModelAdmin):
-    list_display = ('id','approvedStatus', 'isActual')
+    list_display = ('id','approvedStatus', 'isActual', )
+
+@admin.register(StatusMessage, site=lekt_admin_site)
+class StatusMessage(admin.ModelAdmin):
+    list_display = ('status_type','message', )
 
 @admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
