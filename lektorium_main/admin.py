@@ -4,9 +4,12 @@ from lektorium_main.courses.models import Tag, COK, Section, Topic, EducationalC
 from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions, StatusMessage
 from django.utils.translation import ugettext_lazy as _
 
+from lektorium_main.statistics.models import LoggedIn, StudentStatisticsItem
+
 
 class LEKTAdminSite(admin.AdminSite):
     site_header = _('LEKT administration')
+
 
 lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 
@@ -33,8 +36,8 @@ class StatusMessage(admin.ModelAdmin):
 
 @admin.register(Tag, site=lekt_admin_site)
 class Tag(admin.ModelAdmin):
-    list_display = ('name', )
-    search_fields = ('name', )
+    list_display = ('name',)
+    search_fields = ('name',)
     # list_display = ('name',)
     # autocomplete_fields = ["parent", ]
 
@@ -55,6 +58,18 @@ class Topic(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
 
 
-@admin.register(EducationalCourse, site=lekt_admin_site)
-class EducationalCourse(admin.ModelAdmin):
-    pass
+@admin.register(LoggedIn, site=lekt_admin_site)
+class LoggedIn(admin.ModelAdmin):
+    list_display = ('__str__',)
+    readonly_fields = ('user', 'created', 'modified')
+
+
+@admin.register(StudentStatisticsItem, site=lekt_admin_site)
+class StudentStatisticsItemAdmin(admin.ModelAdmin):
+    list_display = ('user', 'module_type', 'position', 'score', 'created')
+    fields = (
+        'user', 'student_module', 'module_type', 'position', 'score',
+        'block_id', 'block_type', 'course_key',
+        'created'
+    )
+    readonly_fields = ('created',)

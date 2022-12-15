@@ -1,0 +1,70 @@
+import json
+import logging
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from lms.djangoapps.courseware.models import StudentModule
+from model_utils.models import TimeStampedModel
+
+logger = logging.getLogger(__name__)
+
+
+class LoggedIn(TimeStampedModel):
+    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        verbose_name = "вход на платформу"
+        verbose_name_plural = "записи входа на платформу"
+
+    def __str__(self):
+        return f"{self.user} - {self.created}"
+
+
+class StudentStatisticsItem(TimeStampedModel):
+    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL, null=True)
+    student_module = models.ForeignKey(StudentModule, blank=True, null=True, on_delete=models.SET_NULL)
+    module_type = models.CharField("Module type", max_length=32)
+    position = models.PositiveSmallIntegerField("Position (Page)", blank=True, null=True)
+    score = models.CharField("Score", max_length=255, blank=True, null=True)
+    block_id = models.CharField("block_id", max_length=255, blank=True, null=True)
+    block_type = models.CharField("block_type", max_length=255, blank=True, null=True)
+    course_key = models.CharField("course_key", max_length=255, blank=True, null=True)
+    done = models.NullBooleanField("Done")
+
+
+
+@receiver(user_logged_in)
+def collect_logged_in(sender, request, user, **kwargs):
+    LoggedIn.objects.create(user=user)
+
+
+@receiver(post_save, sender=StudentModule)
+def save_student_statistics_item(sender, instance, **kwargs):
+    logger.warning(f'STUDENTMODULE !!!!!!!!!!!!!! {instance}')
+    state = json.loads(instance.state)
+    logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
+    score_raw = state.get('score', None)
+    done = state.get('done', None)
+
+    if score_raw:
+        score = score_raw['raw_earned'] / score_raw['raw_possible']
+    else:
+        score = None
+
+    logger.warning(f'SCORE !!!!!!!!!!!!!!!!!!!!! {score}')
+
+
+    StudentStatisticsItem.objects.create(
+        user=get_user_model().objects.get(pk=instance.student_id),
+        student_module=instance,
+        module_type=instance.module_type,
+        block_id=instance.module_state_key.block_id,
+        block_type=instance.module_state_key.block_type,
+        course_key=instance.module_state_key.course_key,
+        position=state.get('position', None),
+        score=score,
+        done=done,
+    )
