@@ -116,12 +116,13 @@ class Profile(PolymorphicModel, BaseModel):
     
     @classmethod
     def is_profile_exists(cls, user):
-        return cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists()
-
-    @classmethod
-    def is_profile_exists_by_email(cls, user):
         email = user.email
-        return cls.objects.filter(models.Q(StudentProfile___email = email) | models.Q(TeacherProfile___email = email)  ).exists()
+        if cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists():
+            return True
+        elif cls.objects.filter(models.Q(StudentProfile___email = email) | models.Q(TeacherProfile___email = email)  ).exists():
+            return True
+        else:
+            return False
 
 class EducationalInstitution(BaseModel):
     """
@@ -324,10 +325,10 @@ def is_verefication_educont_profile(user):
         return True
     
     profile = Profile.get_polymorph_profile(user)
-    if profile.isActive == False or not profile.is_approved or profile.is_actual == False or profile.is_empty_edu_inst:
-        return False
-    else:
+    if profile.isActive or profile.is_approved or profile.is_actual or profile.is_empty_edu_inst:
         return True
+    else:
+        return False
 
 def get_message_status_educont_profile(user):
     profile = Profile.get_polymorph_profile(user)
