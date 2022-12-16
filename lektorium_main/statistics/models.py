@@ -4,16 +4,21 @@ import logging
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
 from django.db import models
+from django.conf import  settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from lms.djangoapps.courseware.models import StudentModule
+from lektorium_main.profile.models import Profile
 from model_utils.models import TimeStampedModel
 
 logger = logging.getLogger(__name__)
 
 
 class LoggedIn(TimeStampedModel):
-    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL,
+                             null=True)  # TODO: remove after profile_id test
+    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=32, blank=True,
+                                  null=True)  # TODO: make required
 
     class Meta:
         verbose_name = "вход на платформу"
@@ -24,7 +29,10 @@ class LoggedIn(TimeStampedModel):
 
 
 class StudentStatisticsItem(TimeStampedModel):
-    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL,
+                             null=True)  # TODO: remove after profile_id test
+    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=32, blank=True,
+                                  null=True)  # TODO: make required
     student_module = models.ForeignKey(StudentModule, blank=True, null=True, on_delete=models.SET_NULL)
     module_type = models.CharField("Module type", max_length=32)
     position = models.PositiveSmallIntegerField("Position (Page)", blank=True, null=True)
@@ -35,15 +43,27 @@ class StudentStatisticsItem(TimeStampedModel):
     done = models.NullBooleanField("Done")
 
 
-
 @receiver(user_logged_in)
 def collect_logged_in(sender, request, user, **kwargs):
-    LoggedIn.objects.create(user=user)
+    if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
+        if user.verified_profile:  # or exist()
+            if user.verified_profile.role == Profile.Role.STUDENT:
+                profile_id = user.verified_profile.profile_id # You may need to define the profile role
+        else:
+            profile_id = None  # TODO: for local testing, remove
+        LoggedIn.objects.create(
+            user=user,
+            profile_id=profile_id
+        )
 
 
 @receiver(post_save, sender=StudentModule)
 def save_student_statistics_item(sender, instance, **kwargs):
-    logger.warning(f'STUDENTMODULE !!!!!!!!!!!!!! {instance}')
+    user = get_user_model().objects.get(pk=instance.student_id)
+    if user.verified_profile:
+        profile_id = user.verified_profile.profile_id
+    else:
+        profile_id = None  # TODO: for local testing, remove
     state = json.loads(instance.state)
     logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
     score_raw = state.get('score', None)
@@ -54,11 +74,9 @@ def save_student_statistics_item(sender, instance, **kwargs):
     else:
         score = None
 
-    logger.warning(f'SCORE !!!!!!!!!!!!!!!!!!!!! {score}')
-
-
     StudentStatisticsItem.objects.create(
-        user=get_user_model().objects.get(pk=instance.student_id),
+        user=user,
+        profile_id=profile_id,
         student_module=instance,
         module_type=instance.module_type,
         block_id=instance.module_state_key.block_id,

@@ -4,7 +4,7 @@ from django.db import models
 from django_mysql.models import SetCharField
 from polymorphic.models import PolymorphicModel
 
-from lektorium_main.models import BaseModel
+from lektorium_main.core.models import BaseModel
 
 
 class Tag(BaseModel):

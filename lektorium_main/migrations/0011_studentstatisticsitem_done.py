@@ -4,9 +4,9 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('lektorium_main', '0008_auto_20221214_1522'),
+        ('lektorium_main', '0010_alter_statusmessage_status_type',),
+        ('lektorium_main', '0008_auto_20221214_1522',),
     ]
 
     operations = [

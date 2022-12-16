@@ -9,7 +9,8 @@ from django.dispatch import receiver
 import logging
 
 from lektorium_main.core.models import BaseModel
-from lektorium_main.courses.models import *
+# from lektorium_main.courses.models import *
+import uuid
 from django.contrib.auth.signals import user_logged_in
 
 
@@ -57,39 +58,39 @@ class Profile(PolymorphicModel, BaseModel):
     def is_empty_edu_inst(self):
         if self.educationalInstitutions.educationalInstitution:
             return True
-        else: 
+        else:
             return False
 
     @property
     def is_actual(self):
         return self.educationalInstitutions.isActual
-    
+
     @property
     def is_approved(self):
         if self.educationalInstitutions.approvedStatus == 'APPROVED':
             return True
-        else: 
+        else:
             return False
-    
+
     @property
     def is_not_approved(self):
         if self.educationalInstitutions.approvedStatus == 'NOT_APPROVED':
             return True
-        else: 
+        else:
             return False
 
     @property
     def is_graduate_approved(self):
         if self.educationalInstitutions.approvedStatus == 'GRADUATE':
             return True
-        else: 
+        else:
             return False
 
     @property
     def is_none_approved(self):
         if self.educationalInstitutions.approvedStatus == None or self.educationalInstitutions.approvedStatus == '':
             return True
-        else: 
+        else:
             return False
 
     def __str__(self):
@@ -113,7 +114,7 @@ class Profile(PolymorphicModel, BaseModel):
     def get_polymorph_profile(cls, user):
         if cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists():
             return cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).first()
-    
+
     @classmethod
     def is_profile_exists(cls, user):
         email = user.email
@@ -166,7 +167,7 @@ class EducationalInstitution(BaseModel):
     class Meta:
         verbose_name = 'данные об образовательном учреждении'
         verbose_name_plural = 'данные об образовательных учреждениях'
-    
+
     def __str__(self):
         return str(self.pk)
 
@@ -302,7 +303,7 @@ class StatusMessage(BaseModel):
         NOT_APPROVED_STATUS = 'NOT_APPROVED_STATUS',
         NONE_APPROVED_STATUS = 'NONE_APPROVED_STATUS'
         GRADUATE_APPROVED_STATUS = 'GRADUATE_APPROVED_STATUS'
-    
+
     status_type = models.CharField('Тип сообщения',help_text='ВНИМАНИЕ! Типы сообщений униакальные для каждой записи', max_length=50, choices=StatusType.choices, unique=True)
     message = models.CharField('Сообщение', max_length=400, blank=True, null=True)
 
@@ -323,7 +324,7 @@ class StatusMessage(BaseModel):
 def is_verefication_educont_profile(user):
     if user.is_superuser or user.is_staff:
         return True
-    
+
     profile = Profile.get_polymorph_profile(user)
     if profile.isActive or profile.is_approved or profile.is_actual or profile.is_empty_edu_inst:
         return True
@@ -340,9 +341,9 @@ def get_message_status_educont_profile(user):
         return StatusMessage.get_message(StatusMessage.StatusType.EMPTY_EDU_INST)
     elif not profile.is_none_approved:
         return StatusMessage.get_message(StatusMessage.StatusType.NONE_APPROVED_STATUS)
-    elif not profile.is_not_approved: 
+    elif not profile.is_not_approved:
         return StatusMessage.get_message(StatusMessage.StatusType.NOT_APPROVED_STATUS)
-    elif not profile.is_graduate_approved: 
+    elif not profile.is_graduate_approved:
         return StatusMessage.get_message(StatusMessage.StatusType.GRADUATE_APPROVED_STATUS)
     elif not profile.is_approved:
         return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
