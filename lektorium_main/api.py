@@ -1,6 +1,6 @@
 import logging
 from ninja import NinjaAPI, Schema, ModelSchema
-from ninja.security import django_auth
+from ninja.security import django_auth, HttpBearer
 from django.contrib.auth.models import User
 from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile
 from ninja.orm import create_schema
@@ -16,6 +16,11 @@ import json
 import requests
 
 api = NinjaAPI(csrf=True)
+
+class AuthBearer(HttpBearer):
+    def authenticate(self, request, token):
+        return token
+
 log = logging.getLogger(__name__)
 SYSTEM_CODE = "66a79e1f-0d24-46bf-9d77-a3af72e61384"
 PRIVATE_KEY = """-----BEGIN PRIVATE KEY-----
@@ -51,10 +56,7 @@ def gen_token(request, path):
     timestamp = int(time.time())
 
     if request.method == "POST" or request.method == "PUT":
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        content = body['content']
-        requestHash = hashlib.md5(content).hexdigest()
+        requestHash = hashlib.md5(request.body).hexdigest()
     else:
         requestHash = hashlib.md5(path.encode()).hexdigest()
 
@@ -132,14 +134,26 @@ def delete_profile(request, profile_id: str):
     except:
         pass
 
+# не работает просто тесты.
 @api.get('/test', auth=django_auth)
 def test(request):
     path ='https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(SYSTEM_CODE)
-    path='https://api.dev.educont.ru/api/v1/public/status-profiles-between-date?startDate=2022-10-25T00:00:01.00Z&endDate=2022-12-30T00:00:01.00Z&page=0&size=2000'
+    path='https://api.dev.educont.ru/api/v1/public/sse/connect'
     token = gen_token(request=request, path=path)
-    test = requests.get(url=path, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+    test = requests.get(url=path, headers={ "Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token) })
     logging.warning(test)
-    return test.json()
+    return test
+
+@api.post('/feedback')
+def feedback(request):
+    # try:
+    path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
+    token = gen_token(request=request, path=path)
+    feedback = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+    logging.warning(feedback)
+    return {"success": True}
+    # except:
+    #     raise HttpResponseServerError()
 # api.put("/me", auth=django_auth)
 # def update_me(request):
 #     try:

@@ -33,7 +33,7 @@ class CokOAuth2(BaseOAuth2):
         fullname = response.get('fullName')
         name = response.get('name')
         surname = response.get('surname')
-        email = response.get('email')
+        email = response.get('email') or response.get('login')
         return {
             'username': nickname,
             'email': email,
