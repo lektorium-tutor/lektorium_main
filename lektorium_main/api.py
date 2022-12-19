@@ -68,6 +68,22 @@ def gen_token(request, path):
     }, PRIVATE_KEY, algorithm="RS256")
     return encoded_token
 
+def gen_tokenV2(method, path, body=None):
+    timestamp = int(time.time())
+
+    if method == "POST" or method == "PUT":
+        requestHash = hashlib.md5(body).hexdigest()
+    else:
+        requestHash = hashlib.md5(path.encode()).hexdigest()
+
+    encoded_token = jwt.encode({
+        "systemName": "Лекториум",
+        "createdTimestamp": timestamp,
+        "requestHash": requestHash,
+        "systemCode": SYSTEM_CODE
+    }, PRIVATE_KEY, algorithm="RS256")
+    return encoded_token
+
 
 class UserSchema(ModelSchema):
     class Config:
@@ -143,6 +159,16 @@ def test(request):
     test = requests.get(url=path, headers={ "Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token) })
     logging.warning(test)
     return test
+
+@api.post('/token', auth=django_auth)
+def genToken(request):
+    body = json.loads(request.body.decode())
+    logging.warning(body)
+    path = body['path']
+    method = body['method']
+    token = gen_tokenV2(method=method, path=path)
+    logging.warning(token)
+    return token
 
 @api.post('/feedback')
 def feedback(request):
