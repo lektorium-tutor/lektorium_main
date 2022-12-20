@@ -1,15 +1,16 @@
 import json
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in
 from django.db import models
-from django.conf import  settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from lms.djangoapps.courseware.models import StudentModule
-from lektorium_main.profile.models import Profile
 from model_utils.models import TimeStampedModel
+
+from lektorium_main.profile.models import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class LoggedIn(TimeStampedModel):
         verbose_name_plural = "записи входа на платформу"
 
     def __str__(self):
-        return f"{self.user} - {self.created}"
+        return f"LoggedIn: {self.user} - {self.created}"
 
 
 class StudentStatisticsItem(TimeStampedModel):
@@ -42,21 +43,25 @@ class StudentStatisticsItem(TimeStampedModel):
     course_key = models.CharField("course_key", max_length=255, blank=True, null=True)
     done = models.NullBooleanField("Done")
 
+    def __str__(self):
+        return f"StatisticsItem: {self.profile_id} {self.module_type}"
+
 
 @receiver(user_logged_in)
 def collect_logged_in(sender, request, user, **kwargs):
     if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
         try:
             if user.verified_profile.role == Profile.Role.STUDENT:
-                profile_id = user.verified_profile.profile_id # You may need to define the profile role
+                profile_id = user.verified_profile.profile_id  # You may need to define the profile role
             else:
-                profile_id =None
+                profile_id = None
             LoggedIn.objects.create(
                 user=user,
                 profile_id=profile_id
             )
         except Exception as err:
             logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
+
 
 @receiver(post_save, sender=StudentModule)
 def save_student_statistics_item(sender, instance, **kwargs):

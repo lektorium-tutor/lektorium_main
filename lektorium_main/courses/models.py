@@ -79,6 +79,9 @@ class Course(PolymorphicModel, BaseModel):
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
     courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
+    def __str__(self):
+        return self.courseName
+
 
 class COK(Course):
     @property
@@ -101,6 +104,8 @@ class COK(Course):
         max_length=(9 + 7 * 2),  # 1..16
     )
     tags = models.ManyToManyField(Tag)
+
+
 
     def educont_upload(self):
         """
