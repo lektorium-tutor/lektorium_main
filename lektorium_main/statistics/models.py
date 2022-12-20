@@ -46,15 +46,17 @@ class StudentStatisticsItem(TimeStampedModel):
 @receiver(user_logged_in)
 def collect_logged_in(sender, request, user, **kwargs):
     if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
-        if user.verified_profile:  # or exist()
+        try:
             if user.verified_profile.role == Profile.Role.STUDENT:
                 profile_id = user.verified_profile.profile_id # You may need to define the profile role
-        else:
-            profile_id = None  # TODO: for local testing, remove
-        LoggedIn.objects.create(
-            user=user,
-            profile_id=profile_id
-        )
+            else:
+                profile_id =None
+            LoggedIn.objects.create(
+                user=user,
+                profile_id=profile_id
+            )
+        except Exception as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}")
 
 
 @receiver(post_save, sender=StudentModule)
