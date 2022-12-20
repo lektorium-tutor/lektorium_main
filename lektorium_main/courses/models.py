@@ -29,7 +29,7 @@ class Tag(BaseModel):
     name: string "Наименование тега"
     parentId: string (uuid) "id родительского тэга" null=True
     """
-    tag_id = models.CharField(max_length=255, default=uuid.uuid4(), unique=True)
+    tag_id = models.CharField(max_length=255, default=uuid.uuid4, unique=True)
     name = models.CharField("Наименование тега", max_length=255)
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
     category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
