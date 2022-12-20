@@ -19,6 +19,9 @@ log = logging.getLogger(__name__)
 class TagCategory(BaseModel):
     name = models.CharField("Наименование категории", max_length=255)
 
+    def __str__(self):
+        return self.name
+
 
 class Tag(BaseModel):
     """
@@ -30,6 +33,9 @@ class Tag(BaseModel):
     name = models.CharField("Наименование тега", max_length=255)
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
     category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class Course(PolymorphicModel, BaseModel):
