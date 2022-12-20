@@ -324,13 +324,13 @@ class StatusMessage(BaseModel):
 
 def is_verefication_educont_profile(user):
     if user.is_superuser or user.is_staff:
-        return True
+        return False
 
     profile = Profile.get_polymorph_profile(user)
-    if profile.isActive or profile.is_approved or profile.is_actual or profile.is_empty_edu_inst:
-        return True
-    else:
+    if profile.isActive and profile.is_approved and profile.is_actual and profile.is_empty_edu_inst:
         return False
+    else:
+        return True
 
 def get_message_status_educont_profile(user):
     profile = Profile.get_polymorph_profile(user)
