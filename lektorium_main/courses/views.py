@@ -10,6 +10,7 @@ from openedx.features.course_experience.utils import get_course_outline_block_tr
 # from lms.djangoapps.course_blocks.api import get_course_blocks
 # from openedx.core.lib.courses import get_course_by_id
 
+
 log = logging.getLogger(__name__)
 
 
@@ -51,4 +52,5 @@ class MatchingMaterialsView(View):
             })
 
         context['courses'] = courses
+
         return render(request, self.template_name, context)

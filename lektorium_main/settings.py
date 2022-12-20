@@ -26,3 +26,5 @@ sentry_sdk.init(
 # SOCIAL_AUTH_PIPELINE = ['lektorium_main.oauth2.pipeline.profile.save_profile', ]
 
 # insert_enterprise_pipeline_elements(SOCIAL_AUTH_PIPELINE)
+
+EDUCONT_BASE_URL = 'https://api.dev.educont.ru'

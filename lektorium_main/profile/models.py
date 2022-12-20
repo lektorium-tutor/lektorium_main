@@ -9,9 +9,10 @@ from django.dispatch import receiver
 import logging
 
 from lektorium_main.core.models import BaseModel
-# from lektorium_main.courses.models import *
+from lektorium_main.courses.models import COK
 import uuid
 from django.contrib.auth.signals import user_logged_in
+from common.djangoapps.student.models import CourseEnrollment
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -349,3 +350,9 @@ def get_message_status_educont_profile(user):
         return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
     else:
         return StatusMessage.empty_message
+
+
+@receiver(post_save, sender=Profile)
+def enroll_user(sender, instance, **kwargs):
+    user = get_user_model().objects.get(pk=instance.user)
+    CourseEnrollment.enroll(user, COK.course_id)

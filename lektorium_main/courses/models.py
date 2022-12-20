@@ -1,10 +1,22 @@
-import uuid
+from django.conf import settings
+import base64
+import hashlib
+import time
 
+import jwt
+import requests
+from django.conf import settings
 from django.db import models
 from django_mysql.models import SetCharField
 from polymorphic.models import PolymorphicModel
+import logging
 
+from lektorium_main.api import SYSTEM_CODE, PRIVATE_KEY
 from lektorium_main.core.models import BaseModel
+log = logging.getLogger(__name__)
+
+class TagCategory(BaseModel):
+    name = models.CharField("Наименование категории", max_length=255)
 
 
 class Tag(BaseModel):
@@ -15,6 +27,7 @@ class Tag(BaseModel):
     """
     name = models.CharField("Наименование тега", max_length=255)
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
 
 
 class Course(PolymorphicModel, BaseModel):
@@ -54,7 +67,7 @@ class Course(PolymorphicModel, BaseModel):
         (2, "Тема"),
         (3, "Учебный материал")
     )
-    externalId = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
+    externalId = models.CharField(unique=True)
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
     courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
@@ -63,6 +76,8 @@ class COK(Course):
     @property
     def courseTypeId(self):
         return 0
+
+    course_id = models.CharField("ИД курса на едх", max_length=255)
 
     courseImageFile = models.ImageField("Файл изображения",
                                         help_text="Изображение не должно содержать никаких надписей. "
@@ -78,6 +93,53 @@ class COK(Course):
         max_length=(9 + 7 * 2),  # 1..16
     )
     tags = models.ManyToManyField(Tag)
+
+    def educont_upload(self):
+        """
+        {
+            "data": [
+        {
+                "externalId": "math11",
+                "courseTypeId":"4",
+                "courseImage": "data:image/png;base64,iVBORw0KGgoAAAANSU...hEUgAAABgAAAAYCA",
+                "externalLink": "https://.....ru",
+                "grades": "["11" ]",
+                "courseName": "Степени и логарифмы (10-11 класс)",
+              "courseDescription": "Логарифмы - сложная тема в школьном курсе математики. И причина состоит в том, что даже для их определения используются неудачные формулировки...",
+                "tags":"[ { "id": "bbd7befb-10d3-4bd5-8f65-17b3073e20ec" },   { "id": "78d7befb-22d3-4bd5-8f65-17b3073e20ec" }]"
+        }
+            ]
+        }
+        """
+
+        timestamp = int(time.time())
+        with open(self.courseImageFile.path, "rb") as img_file:
+            course_image_base64 = base64.b64encode(img_file.read())
+        body = [
+            {"externalId": self.externalId,
+             "courseTypeId": self.courseTypeId,
+             "courseImage": course_image_base64,
+             "externalLink": self.externalLink,
+             "grades": self.grades,
+             "courseName": self.courseName,
+             "courseDescription": self.courseDescription,
+             "tags": self.tags.all(),
+             }
+        ]
+        request_hash = hashlib.md5(body).hexdigest()
+
+        encoded_token = jwt.encode({
+            "systemName": "Лекториум",
+            "createdTimestamp": timestamp,
+            "requestHash": request_hash,
+            "systemCode": SYSTEM_CODE
+        }, PRIVATE_KEY, algorithm="RS256")
+
+        r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
+                      data=body,
+                      headers={"Authorization": f"Bearer {encoded_token}"}
+                      )
+        log.warning(f"POST COURSE: {r.json()}")
 
 
 class Section(Course):
