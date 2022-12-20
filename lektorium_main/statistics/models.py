@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class LoggedIn(TimeStampedModel):
     user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL,
                              null=True)  # TODO: remove after profile_id test
-    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=32, blank=True,
+    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=36, blank=True,
                                   null=True)  # TODO: make required
 
     class Meta:
@@ -31,7 +31,7 @@ class LoggedIn(TimeStampedModel):
 class StudentStatisticsItem(TimeStampedModel):
     user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL,
                              null=True)  # TODO: remove after profile_id test
-    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=1024, blank=True,
+    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=36, blank=True,
                                   null=True)  # TODO: make required
     student_module = models.ForeignKey(StudentModule, blank=True, null=True, on_delete=models.SET_NULL)
     module_type = models.CharField("Module type", max_length=32)
@@ -56,8 +56,7 @@ def collect_logged_in(sender, request, user, **kwargs):
                 profile_id=profile_id
             )
         except Exception as err:
-            logger.error(f"Unexpected {err=}, {type(err)=}")
-
+            logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
 
 @receiver(post_save, sender=StudentModule)
 def save_student_statistics_item(sender, instance, **kwargs):
@@ -66,7 +65,7 @@ def save_student_statistics_item(sender, instance, **kwargs):
         if user.verified_profile:
             profile_id = user.verified_profile.profile_id
         else:
-            profile_id = None  # TODO: for local testing, remove
+            profile_id = 'nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn'  # TODO: for local testing, remove
         state = json.loads(instance.state)
         logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
         score_raw = state.get('score', None)
@@ -79,7 +78,7 @@ def save_student_statistics_item(sender, instance, **kwargs):
 
         StudentStatisticsItem.objects.create(
             user=user,
-            profile_id=profile_id,
+            profile_id=profile_id[:36],
             student_module=instance,
             module_type=instance.module_type,
             block_id=instance.module_state_key.block_id,

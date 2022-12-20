@@ -322,7 +322,7 @@ class StatusMessage(BaseModel):
         except:
             return cls.empty_message
 
-def is_verefication_educont_profile(user):
+def is_verification_educont_profile(user):
     if user.is_superuser or user.is_staff:
         return False
 
