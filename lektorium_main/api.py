@@ -37,13 +37,16 @@ def gen_token(request, path):
         "systemName": "Лекториум",
         "createdTimestamp": timestamp,
         "requestHash": requestHash,
-        "systemCode": settings.SYSTEM_CODE
-    }, settings.PRIVATE_KEY, algorithm="RS256")
+        "systemCode": settings.SYSTEM_CODE_EDUCONT
+    }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
     return encoded_token
 
 def gen_tokenV2(method, path, body=None):
     timestamp = int(time.time())
-
+    logging.warning(path)
+    logging.warning(method)
+    logging.warning(settings.SYSTEM_CODE_EDUCONT)
+    logging.warning(settings.PRIVATE_KEY_EDUCONT)
     if method == "POST" or method == "PUT":
         requestHash = hashlib.md5(body).hexdigest()
     else:
@@ -53,8 +56,8 @@ def gen_tokenV2(method, path, body=None):
         "systemName": "Лекториум",
         "createdTimestamp": timestamp,
         "requestHash": requestHash,
-        "systemCode": settings.SYSTEM_CODE
-    }, settings.PRIVATE_KEY, algorithm="RS256")
+        "systemCode": settings.SYSTEM_CODE_EDUCONT
+    }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
     return encoded_token
 
 
@@ -126,12 +129,26 @@ def delete_profile(request, profile_id: str):
 # не работает просто тесты.
 @api.get('/test', auth=django_auth)
 def test(request):
-    path ='https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(SYSTEM_CODE)
+    path ='https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(settings.SYSTEM_CODE_EDUCONT)
     path='https://api.dev.educont.ru/api/v1/public/sse/connect'
     token = gen_token(request=request, path=path)
     test = requests.get(url=path, headers={ "Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token) })
     logging.warning(test)
     return test
+
+@api.get('/token', auth=django_auth)
+def genTokenGet(request):
+    path = request.GET['path']
+    method = request.GET['method']
+    # logging.warning(path)
+    # logging.warning(method)
+    # body = json.loads(request.body.decode())
+    # logging.warning(body)
+    # path = body['path']
+    # method = body['method']
+    token = gen_tokenV2(method=method, path=path)
+    logging.warning(token)
+    return token
 
 @api.post('/token', auth=django_auth)
 def genToken(request):
@@ -146,8 +163,11 @@ def genToken(request):
 @api.post('/feedback')
 def feedback(request):
     # try:
+    body = json.loads(request.body.decode())
     path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
-    token = gen_token(request=request, path=path)
+    path = body['path']
+    method = body['method']
+    token = gen_tokenV2(method=method, path=path)
     feedback = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
     logging.warning(feedback)
     return {"success": True}
