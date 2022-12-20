@@ -31,7 +31,7 @@ class LoggedIn(TimeStampedModel):
 class StudentStatisticsItem(TimeStampedModel):
     user = models.ForeignKey(get_user_model(), verbose_name="Пользователь", on_delete=models.SET_NULL,
                              null=True)  # TODO: remove after profile_id test
-    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=36, blank=True,
+    profile_id = models.CharField("id профиля пользователя в системе Educont", max_length=1024, blank=True,
                                   null=True)  # TODO: make required
     student_module = models.ForeignKey(StudentModule, blank=True, null=True, on_delete=models.SET_NULL)
     module_type = models.CharField("Module type", max_length=32)
