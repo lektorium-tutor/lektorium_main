@@ -12,7 +12,6 @@ from django.db import models
 from django_mysql.models import SetCharField
 from polymorphic.models import PolymorphicModel
 
-from lektorium_main.api import SYSTEM_CODE, PRIVATE_KEY
 from lektorium_main.core.models import BaseModel
 
 log = logging.getLogger(__name__)
@@ -71,7 +70,7 @@ class Course(PolymorphicModel, BaseModel):
         (2, "Тема"),
         (3, "Учебный материал")
     )
-    externalId = models.CharField(unique=True)
+    externalId = models.CharField(unique=True, max_length=255)
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
     courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
@@ -136,8 +135,8 @@ class COK(Course):
             "systemName": "Лекториум",
             "createdTimestamp": timestamp,
             "requestHash": request_hash,
-            "systemCode": SYSTEM_CODE
-        }, PRIVATE_KEY, algorithm="RS256")
+            "systemCode": settings.SYSTEM_CODE
+        }, settings.PRIVATE_KEY, algorithm="RS256")
 
         r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
                           data=body,

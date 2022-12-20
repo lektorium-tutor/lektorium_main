@@ -69,12 +69,12 @@ def save_student_statistics_item(sender, instance, **kwargs):
         logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
         score_raw = state.get('score', None)
         done = state.get('done', None)
-    
+
         if score_raw:
             score = score_raw['raw_earned'] / score_raw['raw_possible']
         else:
             score = None
-    
+
         StudentStatisticsItem.objects.create(
             user=user,
             profile_id=profile_id,
