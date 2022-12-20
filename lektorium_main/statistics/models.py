@@ -59,30 +59,33 @@ def collect_logged_in(sender, request, user, **kwargs):
 
 @receiver(post_save, sender=StudentModule)
 def save_student_statistics_item(sender, instance, **kwargs):
-    user = get_user_model().objects.get(pk=instance.student_id)
-    if user.verified_profile:
-        profile_id = user.verified_profile.profile_id
-    else:
-        profile_id = None  # TODO: for local testing, remove
-    state = json.loads(instance.state)
-    logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
-    score_raw = state.get('score', None)
-    done = state.get('done', None)
-
-    if score_raw:
-        score = score_raw['raw_earned'] / score_raw['raw_possible']
-    else:
-        score = None
-
-    StudentStatisticsItem.objects.create(
-        user=user,
-        profile_id=profile_id,
-        student_module=instance,
-        module_type=instance.module_type,
-        block_id=instance.module_state_key.block_id,
-        block_type=instance.module_state_key.block_type,
-        course_key=instance.module_state_key.course_key,
-        position=state.get('position', None),
-        score=score,
-        done=done,
-    )
+    try:
+        user = get_user_model().objects.get(pk=instance.student_id)
+        if user.verified_profile:
+            profile_id = user.verified_profile.profile_id
+        else:
+            profile_id = None  # TODO: for local testing, remove
+        state = json.loads(instance.state)
+        logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
+        score_raw = state.get('score', None)
+        done = state.get('done', None)
+    
+        if score_raw:
+            score = score_raw['raw_earned'] / score_raw['raw_possible']
+        else:
+            score = None
+    
+        StudentStatisticsItem.objects.create(
+            user=user,
+            profile_id=profile_id,
+            student_module=instance,
+            module_type=instance.module_type,
+            block_id=instance.module_state_key.block_id,
+            block_type=instance.module_state_key.block_type,
+            course_key=instance.module_state_key.course_key,
+            position=state.get('position', None),
+            score=score,
+            done=done,
+        )
+    except:
+        logger.error(f'ERROR: Cannot save student log in event for {user}')

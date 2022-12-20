@@ -1,7 +1,9 @@
-from django.conf import settings
+import base64
 import base64
 import hashlib
+import logging
 import time
+import uuid
 
 import jwt
 import requests
@@ -9,11 +11,12 @@ from django.conf import settings
 from django.db import models
 from django_mysql.models import SetCharField
 from polymorphic.models import PolymorphicModel
-import logging
 
 from lektorium_main.api import SYSTEM_CODE, PRIVATE_KEY
 from lektorium_main.core.models import BaseModel
+
 log = logging.getLogger(__name__)
+
 
 class TagCategory(BaseModel):
     name = models.CharField("Наименование категории", max_length=255)
@@ -25,6 +28,7 @@ class Tag(BaseModel):
     name: string "Наименование тега"
     parentId: string (uuid) "id родительского тэга" null=True
     """
+    tag_id = models.CharField(max_length=255, default=uuid.uuid4(), unique=True)
     name = models.CharField("Наименование тега", max_length=255)
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
     category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
@@ -123,7 +127,7 @@ class COK(Course):
              "grades": self.grades,
              "courseName": self.courseName,
              "courseDescription": self.courseDescription,
-             "tags": self.tags.all(),
+             "tags": [tag.tag_id for tag in self.tags.all()],
              }
         ]
         request_hash = hashlib.md5(body).hexdigest()
@@ -136,9 +140,9 @@ class COK(Course):
         }, PRIVATE_KEY, algorithm="RS256")
 
         r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
-                      data=body,
-                      headers={"Authorization": f"Bearer {encoded_token}"}
-                      )
+                          data=body,
+                          headers={"Authorization": f"Bearer {encoded_token}"}
+                          )
         log.warning(f"POST COURSE: {r.json()}")
 
 
