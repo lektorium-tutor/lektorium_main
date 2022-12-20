@@ -109,10 +109,10 @@ UserProfileSchema = create_schema(
 def me(request):
     try:
         user = get_object_or_404(User, username=request.auth)
-        profile = get_object_or_404(Profile, user=user)
+        profile = Profile.get_polymorph_profile(user)
         return profile
     except:
-        return HttpResponseServerError()
+        return {"success": False}
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
