@@ -51,7 +51,7 @@ class TagCategoryAdmin(admin.ModelAdmin):
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag_id', 'name',)
     search_fields = ('name', 'category')
-    filter_vertical = ('category',)
+    # filter_vertical = ('category',)
 
     # autocomplete_fields = ["parent", ]
 
