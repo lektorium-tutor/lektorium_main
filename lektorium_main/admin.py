@@ -62,23 +62,23 @@ def upload(modeladmin, request, queryset):
 
 @admin.register(COK, site=lekt_admin_site)
 class COKAdmin(admin.ModelAdmin):
-    list_display = ('courseTypeId', 'courseName', 'externalLink', 'courseDescription')
+    list_display = ('courseName', 'externalLink', 'courseDescription')
     actions = [upload,]
 
 
 @admin.register(Section, site=lekt_admin_site)
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('externalId', 'courseTypeId', 'courseName')
+    list_display = ('externalId', 'courseName')
     # autocomplete_fields = ["externalParent", ]
 
 
 @admin.register(Topic, site=lekt_admin_site)
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ('externalId', 'courseTypeId', 'courseName')
+    list_display = ('externalId', 'courseName')
 
 @admin.register(TeachingMaterial, site=lekt_admin_site)
 class TeachingMaterialAdmin(admin.ModelAdmin):
-    list_display = ('externalId', 'courseTypeId', 'courseName')
+    list_display = ('externalId', 'courseName')
 
 
 

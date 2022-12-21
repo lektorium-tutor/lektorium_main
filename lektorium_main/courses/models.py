@@ -38,7 +38,7 @@ class Tag(BaseModel):
         return self.name
 
 
-class Course(PolymorphicModel, BaseModel):
+class Course(PolymorphicModel):
     """
     Учебный материал (в том числе ЦОК), который предоставляет образовательная платформа
     для изучения пользователям.
@@ -69,15 +69,16 @@ class Course(PolymorphicModel, BaseModel):
 
     """
 
-    COURSE_TYPES = (
-        (0, "ЦОК"),
-        (1, "Раздел"),
-        (2, "Тема"),
-        (3, "Учебный материал")
-    )
+    # COURSE_TYPES = (
+    #     (0, "ЦОК"),
+    #     (1, "Раздел"),
+    #     (2, "Тема"),
+    #     (3, "Учебный материал")
+    # )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     externalId = models.CharField(unique=True, max_length=255)
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
-    courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
+    # courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
     def __str__(self):
         return self.courseName
