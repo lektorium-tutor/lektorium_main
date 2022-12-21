@@ -104,6 +104,9 @@ class COK(Course):
         max_length=(9 + 7 * 2),  # 1..16
     )
     tags = models.ManyToManyField(Tag)
+    class Meta:
+        verbose_name = "курс ЦОК"
+        verbose_name_plural = "курсы ЦОК"
 
 
 
@@ -163,6 +166,10 @@ class Section(Course):
     externalParent = models.ForeignKey(Course, related_name="sections", blank=False, null=False,
                                        on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = "раздел курса"
+        verbose_name_plural = "разделы курса"
+
 
 class Topic(Course):
     @property
@@ -172,20 +179,22 @@ class Topic(Course):
     externalParent = models.ForeignKey(Course, related_name="topics", blank=False, null=False,
                                        on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = "тема"
+        verbose_name_plural = "темы"
 
-class EducationalCourse(Course):
+
+class TeachingMaterial(Course):
     @property
     def courseTypeId(self):
         return 3
 
     externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
-    courseDescription = models.TextField("Описание учебного материала", blank=False, null=False)
-    externalParent = models.ForeignKey(Course, related_name="educational_courses", blank=False, null=False,
+    externalParent = models.ForeignKey(Course, related_name="teaching_materials", blank=False, null=False,
                                        on_delete=models.CASCADE)
-    grades = SetCharField(
-        verbose_name="Массив классов, которым доступен учебный материал",
-        base_field=models.PositiveSmallIntegerField(),
-        size=16,
-        max_length=(9 + 7 * 2),  # 1..16
-    )
+
     tags = models.ManyToManyField(Tag)
+
+    class Meta:
+        verbose_name = "материал"
+        verbose_name_plural = "материалы"

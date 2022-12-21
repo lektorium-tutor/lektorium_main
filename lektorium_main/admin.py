@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from lektorium_main.courses.models import Tag, COK, Section, Topic, TagCategory
+from lektorium_main.courses.models import Tag, COK, Section, Topic, TeachingMaterial, TagCategory
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
 from lektorium_main.statistics.models import LoggedIn, StudentStatisticsItem
@@ -62,7 +62,7 @@ def upload(modeladmin, request, queryset):
 
 @admin.register(COK, site=lekt_admin_site)
 class COKAdmin(admin.ModelAdmin):
-    list_display = ('courseTypeId', 'courseName')
+    list_display = ('courseTypeId', 'courseName', 'externalLink', 'courseDescription')
     actions = [upload,]
 
 
@@ -75,6 +75,11 @@ class SectionAdmin(admin.ModelAdmin):
 @admin.register(Topic, site=lekt_admin_site)
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseTypeId', 'courseName')
+
+@admin.register(TeachingMaterial, site=lekt_admin_site)
+class TeachingMaterialAdmin(admin.ModelAdmin):
+    list_display = ('externalId', 'courseTypeId', 'courseName')
+
 
 
 @admin.register(LoggedIn, site=lekt_admin_site)
