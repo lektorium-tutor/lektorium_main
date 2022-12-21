@@ -1,5 +1,8 @@
 # TODO: create admin and check models viability
+import json
+
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial, TagCategory
@@ -71,8 +74,50 @@ class CourseAdmin(admin.ModelAdmin):
 class COKAdmin(admin.ModelAdmin):
     list_display = ('courseName', 'externalLink', 'courseDescription')
     autocomplete_fields = ('tags',)
+    readonly_fields = ('id', 'courseTypeId', 'raw_course_outline_data',)
     search_fields = ('courseName', 'course_id')
     actions = [upload, ]
+
+    fieldsets = (
+        (
+            'Common fields',
+            {
+                'fields': (
+                    'id',
+                    'externalId',
+                    'courseName',
+                    'courseTypeId',
+                ),
+            }
+        ),
+        (
+            'Course-specific fields',
+            {
+                'fields': (
+                    'course_id',
+                    'externalLink',
+                    'courseDescription',
+                    'tags',
+                    'courseImageFile',
+                    'grades'
+                )
+            }
+        ),
+        (
+            'Debug Details',
+            {
+                'fields': (
+                    'created', 'modified', 'raw_course_outline_data'
+                ),
+                'classes': ('collapse',),
+            }
+        ),
+    )
+
+    def raw_course_outline_data(self, _obj):
+        outline_data_dict = _obj.get_course_outline_data_dict()
+        outline_data_json = json.dumps(outline_data_dict, indent=2, sort_keys=True)
+        return format_html("<pre>\n{}\n</pre>", outline_data_json)
 
 
 @admin.register(Section, site=lekt_admin_site)

@@ -4,13 +4,21 @@ import json
 import logging
 import time
 import uuid
+from datetime import datetime
+from enum import Enum
 
+import attr
 import jwt
 import requests
 from django.conf import settings
 from django.db import models
 from django_mysql.models import SetCharField
+from opaque_keys import OpaqueKey
+from opaque_keys.edx.keys import CourseKey
+from openedx.core.djangoapps.content.learning_sequences.api import get_course_outline
+from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
+from model_utils.models import TimeStampedModel
 
 from lektorium_main.core.models import BaseModel
 
@@ -47,7 +55,7 @@ class Tag(BaseModel):
         verbose_name_plural = 'теги'
 
 
-class Course(PolymorphicModel):
+class Course(PolymorphicModel, TimeStampedModel):
     """
     Учебный материал (в том числе ЦОК), который предоставляет образовательная платформа
     для изучения пользователям.
@@ -115,11 +123,36 @@ class COK(Course):
         max_length=(9 + 7 * 2),  # 1..16,
         blank=True
     )
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, verbose_name='Теги')
 
     class Meta:
         verbose_name = "курс ЦОК"
         verbose_name_plural = "курсы ЦОК"
+
+    def get_course_outline_data(self):
+        course_key = CourseKey.from_string(self.course_id)
+        try:
+            outline_data = get_course_outline(course_key)
+        except (ValueError, CourseOutlineData.DoesNotExist):
+            return None
+        else:
+            return outline_data
+
+    def get_course_outline_data_dict(self):
+        def json_serializer(self, _field, value):
+            if isinstance(value, OpaqueKey):
+                return str(value)
+            elif isinstance(value, Enum):
+                return value.value
+            elif isinstance(value, datetime):
+                return value.isoformat()
+            return value
+
+        return attr.asdict(
+            self.get_course_outline_data(),
+            recurse=True,
+            value_serializer=json_serializer,
+        )
 
     def educont_upload(self):
         """
@@ -151,7 +184,7 @@ class COK(Course):
                  "grades": [grade for grade in self.grades],
                  "courseName": self.courseName,
                  "courseDescription": self.courseDescription,
-                 "tags": [{"id":tag.tag_id} for tag in self.tags.all()],
+                 "tags": [{"id": tag.tag_id} for tag in self.tags.all()],
                  }
             ]
         }
