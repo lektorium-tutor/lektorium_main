@@ -86,6 +86,7 @@ class Course(PolymorphicModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     externalId = models.CharField(unique=True, max_length=255)
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
+
     # courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
     def __str__(self):
@@ -114,11 +115,10 @@ class COK(Course):
         blank=True
     )
     tags = models.ManyToManyField(Tag)
+
     class Meta:
         verbose_name = "курс ЦОК"
         verbose_name_plural = "курсы ЦОК"
-
-
 
     def educont_upload(self):
         """
@@ -141,17 +141,15 @@ class COK(Course):
         timestamp = int(time.time())
         with open(self.courseImageFile.path, "rb") as img_file:
             course_image_base64 = base64.b64encode(img_file.read())
-        body = [
-            {"externalId": self.externalId,
-             "courseTypeId": self.courseTypeId,
-             "courseImage": course_image_base64,
-             "externalLink": self.externalLink,
-             "grades": self.grades,
-             "courseName": self.courseName,
-             "courseDescription": self.courseDescription,
-             "tags": [tag.tag_id for tag in self.tags.all()],
-             }
-        ]
+        body = {"externalId": self.externalId,
+                "courseTypeId": self.courseTypeId,
+                "courseImage": course_image_base64,
+                "externalLink": self.externalLink,
+                "grades": self.grades,
+                "courseName": self.courseName,
+                "courseDescription": self.courseDescription,
+                "tags": [tag.tag_id for tag in self.tags.all()],
+                }
         request_hash = hashlib.md5(body).hexdigest()
 
         encoded_token = jwt.encode({
