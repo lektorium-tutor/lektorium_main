@@ -38,20 +38,19 @@ def create(backend, user, response, *args, **kwargs):
             fields['email'] = response.get('email')
         else:
             fields['email'] = fields['login'] + "@class.lektorium.tv"
-        logging.warning(fields)
         if educationalInstitutions:
             edu_org, created_org = EducationalInstitution.objects.update_or_create(defaults={**educationalInstitutions[0]['educationalInstitution']}, id=educationalInstitutions[0]['educationalInstitution']['id'])
             edu_orgs, created_orgs = EducationalInstitutions.objects.update_or_create(educationalInstitution=edu_org, approvedStatus=educationalInstitutions[0]['approvedStatus'], isActual=educationalInstitutions[0]['isActual']) 
             fields['educationalInstitutions'] = edu_orgs
 
         if fields['role'] == 'STUDENT':
-            StudentProfile.objects.update_or_create(defaults={**fields}, user=user )
+            StudentProfile.objects.update_or_create(defaults={**fields}, id=profile_id )
             LoggedIn.objects.create(
                 user=user,
                 profile_id=profile_id
             )
         elif fields['role'] == 'TEACHER':
-            TeacherProfile.objects.update_or_create(defaults={**fields}, user=user )
+            TeacherProfile.objects.update_or_create(defaults={**fields}, id=profile_id )
 
         if is_verification_educont_profile(user):
             user.is_active = False

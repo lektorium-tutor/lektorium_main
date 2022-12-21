@@ -101,15 +101,14 @@ UserProfileSchema = create_schema(
 #         "success": True
 #     }
 
-@api.get("/me", auth=django_auth, response=UserProfileSchema)
+@api.get("/me", auth=django_auth, response={200: UserProfileSchema, 200: None})
 def me(request):
-    try:
-        user = get_object_or_404(User, username=request.auth)
-        profile = Profile.get_polymorph_profile(user)
-        # return JsonResponse({"profile": list(profile)})
+    user = get_object_or_404(User, username=request.auth)
+    profile = Profile.get_polymorph_profile(user)
+    if profile:
         return profile
-    except:
-        return JsonResponse({"success": False})
+    else:
+        return 200, None
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
