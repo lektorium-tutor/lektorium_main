@@ -129,17 +129,20 @@ class SectionAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
     search_fields = ('externalId', 'courseName')
     autocomplete_fields = ['externalParent', ]
+    ordering = ['order']
 
 
 @admin.register(Topic, site=lekt_admin_site)
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
     autocomplete_fields = ('externalParent',)
+    ordering = ['order']
 
 
 @admin.register(TeachingMaterial, site=lekt_admin_site)
 class TeachingMaterialAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName', 'tags_display')
+    ordering = ['order']
 
     def tags_display(self, obj):
         return ", ".join([
