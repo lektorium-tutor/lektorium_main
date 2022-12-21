@@ -46,6 +46,10 @@ class StudentStatisticsItem(TimeStampedModel):
     def __str__(self):
         return f"StatisticsItem: {self.profile_id} {self.module_type}"
 
+    class Meta:
+        verbose_name = 'запись статистики'
+        verbose_name_plural = 'записи статистики'
+
 
 @receiver(user_logged_in)
 def collect_logged_in(sender, request, user, **kwargs):

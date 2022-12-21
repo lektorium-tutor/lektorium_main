@@ -22,6 +22,10 @@ class TagCategory(BaseModel):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'категория тегов'
+        verbose_name_plural = 'категории тегов'
+
 
 class Tag(BaseModel):
     """
@@ -36,6 +40,10 @@ class Tag(BaseModel):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = 'тег'
+        verbose_name_plural = 'теги'
 
 
 class Course(PolymorphicModel):
