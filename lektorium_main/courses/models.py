@@ -142,15 +142,19 @@ class COK(Course):
         timestamp = int(time.time())
         with open(self.courseImageFile.path, "rb") as img_file:
             course_image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-        body = {"externalId": self.externalId,
-                "courseTypeId": self.courseTypeId,
-                "courseImage": course_image_base64,
-                "externalLink": self.externalLink,
-                "grades": self.grades,
-                "courseName": self.courseName,
-                "courseDescription": self.courseDescription,
-                "tags": [tag.tag_id for tag in self.tags.all()],
-                }
+        body = {
+            "data": [
+                {"externalId": self.externalId,
+                 "courseTypeId": self.courseTypeId,
+                 "courseImage": course_image_base64,
+                 "externalLink": self.externalLink,
+                 "grades": self.grades,
+                 "courseName": self.courseName,
+                 "courseDescription": self.courseDescription,
+                 "tags": [{"id":tag.tag_id} for tag in self.tags.all()],
+                 }
+            ]
+        }
         request_hash = hashlib.md5(json.dumps(body)).hexdigest()
 
         encoded_token = jwt.encode({
