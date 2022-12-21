@@ -6,7 +6,7 @@ from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfil
 from ninja.orm import create_schema
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseServerError, HttpResponse
+from django.http import HttpResponseServerError, HttpResponse, JsonResponse
 # from common.djangoapps.third_party_auth.models import get_setting
 import jwt
 import os
@@ -110,7 +110,8 @@ def me(request):
     try:
         user = get_object_or_404(User, username=request.auth)
         profile = Profile.get_polymorph_profile(user)
-        return profile
+        # return JsonResponse({"profile": list(profile)})
+        return HttpResponse({"success": True})
     except:
         return HttpResponse({"success": False})
 
