@@ -63,6 +63,10 @@ def upload(modeladmin, request, queryset):
     for course in queryset:
         course.educont_upload()
 
+@admin.action(description='create_educont_objects')
+def create_educont_objects(modeladmin, request, queryset):
+    for course in queryset:
+        course.create_educont_objects()
 
 @admin.register(Course, site=lekt_admin_site)
 class CourseAdmin(admin.ModelAdmin):
@@ -76,7 +80,7 @@ class COKAdmin(admin.ModelAdmin):
     autocomplete_fields = ('tags',)
     readonly_fields = ('id', 'courseTypeId', 'raw_course_outline_data', 'created', 'modified',)
     search_fields = ('courseName', 'course_id')
-    actions = [upload, ]
+    actions = [upload, create_educont_objects]
 
     fieldsets = (
         (

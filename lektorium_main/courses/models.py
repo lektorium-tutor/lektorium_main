@@ -102,6 +102,50 @@ class Course(PolymorphicModel, TimeStampedModel):
         return self.courseName
 
 
+class Section(Course):
+    @property
+    def courseTypeId(self):
+        return 1
+
+    externalParent = models.ForeignKey("COK", related_name="sections", blank=False, null=False,
+                                       on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "раздел курса"
+        verbose_name_plural = "разделы курса"
+
+
+class Topic(Course):
+    @property
+    def courseTypeId(self):
+        return 2
+
+    externalParent = models.ForeignKey(Course, related_name="topics", blank=False, null=False,
+                                       on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "тема"
+        verbose_name_plural = "темы"
+
+
+class TeachingMaterial(Course):
+    @property
+    def courseTypeId(self):
+        return 3
+
+    externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
+    externalParent = models.ForeignKey(Course, related_name="teaching_materials", blank=False, null=False,
+                                       on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    tags = models.ManyToManyField(Tag)
+
+    class Meta:
+        verbose_name = "материал"
+        verbose_name_plural = "материалы"
+
 class COK(Course):
     @property
     def courseTypeId(self):
@@ -154,6 +198,29 @@ class COK(Course):
             value_serializer=json_serializer,
         )
 
+    def create_educont_objects(self):  # TODO: get from modulestore
+        outline_data = self.get_course_outline_data()
+
+        # Sections (=COK)
+        for i, section_data in enumerate(outline_data.sections):
+            if not section_data.visibility.visible_to_staff_only:
+                section = Section.objects.create(
+                    externalParent=self,
+                    courseName=section_data.title,
+                    externalId=section_data.usage_key.block_id,
+                    order=i
+                )
+
+                # Sequences for this section (=Topic)
+
+                for k, sequence_data in enumerate(section_data.sequences):
+                    if not sequence_data.visibility.visible_to_staff_only:
+                        sequence = Topic.objects.create(
+                            externalParent=section,
+                            courseName=sequence_data.title,
+                            externalId=sequence_data.usage_key.block_id,
+                            order=k
+                        )
 
 
     def educont_upload(self):
@@ -206,43 +273,3 @@ class COK(Course):
         log.warning(f"POST COURSE: {r.json()}")
 
 
-class Section(Course):
-    @property
-    def courseTypeId(self):
-        return 1
-
-    externalParent = models.ForeignKey(COK, related_name="sections", blank=False, null=False,
-                                       on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = "раздел курса"
-        verbose_name_plural = "разделы курса"
-
-
-class Topic(Course):
-    @property
-    def courseTypeId(self):
-        return 2
-
-    externalParent = models.ForeignKey(Course, related_name="topics", blank=False, null=False,
-                                       on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = "тема"
-        verbose_name_plural = "темы"
-
-
-class TeachingMaterial(Course):
-    @property
-    def courseTypeId(self):
-        return 3
-
-    externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
-    externalParent = models.ForeignKey(Course, related_name="teaching_materials", blank=False, null=False,
-                                       on_delete=models.CASCADE)
-
-    tags = models.ManyToManyField(Tag)
-
-    class Meta:
-        verbose_name = "материал"
-        verbose_name_plural = "материалы"
