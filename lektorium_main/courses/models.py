@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import json
 import logging
 import time
 import uuid
@@ -150,7 +151,7 @@ class COK(Course):
                 "courseDescription": self.courseDescription,
                 "tags": [tag.tag_id for tag in self.tags.all()],
                 }
-        request_hash = hashlib.md5(str(body)).hexdigest()
+        request_hash = hashlib.md5(json.dumps(body)).hexdigest()
 
         encoded_token = jwt.encode({
             "systemName": "Лекториум",
