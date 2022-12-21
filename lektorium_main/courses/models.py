@@ -102,7 +102,8 @@ class COK(Course):
         verbose_name="Массив классов, которым доступен учебный материал",
         base_field=models.PositiveSmallIntegerField(),
         size=16,
-        max_length=(9 + 7 * 2),  # 1..16
+        max_length=(9 + 7 * 2),  # 1..16,
+        blank=True
     )
     tags = models.ManyToManyField(Tag)
     class Meta:
