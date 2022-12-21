@@ -1,4 +1,4 @@
-from lektorium_main.profile.models import (Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions)
+from lektorium_main.profile.models import (Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions, is_verification_educont_profile)
 from django.contrib.auth.models import User
 import logging
 
@@ -30,8 +30,6 @@ def create(backend, user, response, *args, **kwargs):
             fields = dict(
                 (name, kwargs.get(name, response.get(name))) for name in
                 backend.setting('TEACHER_PROFILE_FIELDS', TEACHER_PROFILE_FIELDS))
-        user.is_active = False
-        user.save()
         fields['user'] = user
         fields['profile_id'] = profile_id
         fields['login'] = fields['login'].split('@')[0] or ''
@@ -44,4 +42,8 @@ def create(backend, user, response, *args, **kwargs):
             StudentProfile.objects.update_or_create(defaults={**fields}, user=user )
         elif fields['role'] == 'TEACHER':
             TeacherProfile.objects.update_or_create(defaults={**fields}, user=user )
+            
+        if is_verification_educont_profile(user):
+            user.is_active = False
+            user.save()
         

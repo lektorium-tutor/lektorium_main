@@ -51,48 +51,48 @@ class StudentStatisticsItem(TimeStampedModel):
         verbose_name_plural = 'записи статистики'
 
 
-# @receiver(user_logged_in)
-# def collect_logged_in(sender, request, user, **kwargs):
-#     if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
-#         try:
-#             if user.verified_profile.role == Profile.Role.STUDENT:
-#                 profile_id = user.verified_profile.profile_id  # You may need to define the profile role
-#             else:
-#                 profile_id = None
-#             LoggedIn.objects.create(
-#                 user=user,
-#                 profile_id=profile_id
-#             )
-#         except Exception as err:
-#             logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
+@receiver(user_logged_in)
+def collect_logged_in(sender, request, user, **kwargs):
+    if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
+        try:
+            if user.verified_profile_educont.role == Profile.Role.STUDENT:
+                profile_id = user.verified_profile_educont.profile_id  # You may need to define the profile role
+            else:
+                profile_id = None
+            LoggedIn.objects.create(
+                user=user,
+                profile_id=profile_id
+            )
+        except Exception as err:
+            logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
 
 
-# @receiver(post_save, sender=StudentModule)
-# def save_student_statistics_item(sender, instance, **kwargs):
-#     user = get_user_model().objects.get(pk=instance.student_id)
-#     if user.verified_profile:
-#         profile_id = user.verified_profile.profile_id
-#     else:
-#         profile_id = None  # TODO: for local testing, remove
-#     state = json.loads(instance.state)
-#     logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
-#     score_raw = state.get('score', None)
-#     done = state.get('done', None)
-#
-#     if score_raw:
-#         score = score_raw['raw_earned'] / score_raw['raw_possible']
-#     else:
-#         score = None
-#
-#     StudentStatisticsItem.objects.create(
-#         user=user,
-#         profile_id=profile_id,
-#         student_module=instance,
-#         module_type=instance.module_type,
-#         block_id=instance.module_state_key.block_id,
-#         block_type=instance.module_state_key.block_type,
-#         course_key=instance.module_state_key.course_key,
-#         position=state.get('position', None),
-#         score=score,
-#         done=done,
-#     )
+@receiver(post_save, sender=StudentModule)
+def save_student_statistics_item(sender, instance, **kwargs):
+    user = get_user_model().objects.get(pk=instance.student_id)
+    if user.verified_profile_educont:
+        profile_id = user.verified_profile_educont.profile_id
+    else:
+        profile_id = None  # TODO: for local testing, remove
+    state = json.loads(instance.state)
+    logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
+    score_raw = state.get('score', None)
+    done = state.get('done', None)
+
+    if score_raw:
+        score = score_raw['raw_earned'] / score_raw['raw_possible']
+    else:
+        score = None
+
+    StudentStatisticsItem.objects.create(
+        user=user,
+        profile_id=profile_id,
+        student_module=instance,
+        module_type=instance.module_type,
+        block_id=instance.module_state_key.block_id,
+        block_type=instance.module_state_key.block_type,
+        course_key=instance.module_state_key.course_key,
+        position=state.get('position', None),
+        score=score,
+        done=done,
+    )

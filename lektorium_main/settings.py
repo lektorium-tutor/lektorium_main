@@ -6,6 +6,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from django.conf import settings
 
 def apply_settings(django_settings):
+    django_settings.SOCIAL_AUTH_PROTECTED_USER_FIELDS = ['username']
     django_settings.SOCIAL_AUTH_PIPELINE += ['lektorium_main.pipeline.profile.create', ]
 
     django_settings.EDUCONT_BASE_URL = 'https://api.dev.educont.ru'

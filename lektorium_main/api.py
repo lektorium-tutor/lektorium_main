@@ -2,7 +2,7 @@ import logging
 from ninja import NinjaAPI, Schema, ModelSchema
 from ninja.security import django_auth, HttpBearer
 from django.contrib.auth.models import User
-from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile
+from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfile, EducationalInstitution
 from ninja.orm import create_schema
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
@@ -66,22 +66,18 @@ class UserSchema(ModelSchema):
         model = User
         model_fields = ['username', 'email', 'is_staff', 'is_active']
 
+# class EducationalInstitutionSchema(Schema):
+#     class Config:
+#         model = EducationalInstitution
 
 UserProfileSchema = create_schema(
     Profile,
+    depth=2
     # fields=[
     #     'role',
     #     'isActive',
     #     'email'
     # ],
-    custom_fields=[
-        ('user', UserSchema, None),
-        # ('has_profile_image', bool, False),
-        # ('age', int, None),
-        # ('level_of_education_display', str, None),
-        # ('gender_display', str, None),
-        # ('country', Any, None)
-    ]
 )
 # class UserIn(Schema):
 #     username: str
@@ -105,13 +101,13 @@ UserProfileSchema = create_schema(
 #         "success": True
 #     }
 
-@api.get("/me", auth=django_auth)
+@api.get("/me", auth=django_auth, response=UserProfileSchema)
 def me(request):
     try:
         user = get_object_or_404(User, username=request.auth)
         profile = Profile.get_polymorph_profile(user)
         # return JsonResponse({"profile": list(profile)})
-        return JsonResponse({"success": True})
+        return profile
     except:
         return JsonResponse({"success": False})
 
