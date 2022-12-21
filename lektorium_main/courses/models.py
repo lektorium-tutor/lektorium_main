@@ -173,7 +173,7 @@ class Section(Course):
     def courseTypeId(self):
         return 1
 
-    externalParent = models.ForeignKey(Course, related_name="sections", blank=False, null=False,
+    externalParent = models.ForeignKey(COK, related_name="sections", blank=False, null=False,
                                        on_delete=models.CASCADE)
 
     class Meta:
