@@ -111,9 +111,9 @@ def me(request):
         user = get_object_or_404(User, username=request.auth)
         profile = Profile.get_polymorph_profile(user)
         # return JsonResponse({"profile": list(profile)})
-        return HttpResponse({"success": True})
+        return JsonResponse({"success": True})
     except:
-        return HttpResponse({"success": False})
+        return JsonResponse({"success": False})
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
