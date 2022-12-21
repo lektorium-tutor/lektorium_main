@@ -8,7 +8,6 @@ from lektorium_main.profile.models import TeacherProfile, StudentProfile, Educat
 from lektorium_main.statistics.models import LoggedIn, StudentStatisticsItem
 
 
-
 class LEKTAdminSite(admin.AdminSite):
     site_header = _('LEKT administration')
 
@@ -55,17 +54,19 @@ class TagAdmin(admin.ModelAdmin):
 
     # autocomplete_fields = ["parent", ]
 
+
 @admin.action(description='POST course')
 def upload(modeladmin, request, queryset):
     for course in queryset:
         course.educont_upload()
+
 
 @admin.register(COK, site=lekt_admin_site)
 class COKAdmin(admin.ModelAdmin):
     list_display = ('courseName', 'externalLink', 'courseDescription')
     autocomplete_fields = ('tags',)
     search_fields = ('courseName', 'course_id')
-    actions = [upload,]
+    actions = [upload, ]
 
 
 @admin.register(Section, site=lekt_admin_site)
@@ -78,10 +79,17 @@ class SectionAdmin(admin.ModelAdmin):
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
 
+
 @admin.register(TeachingMaterial, site=lekt_admin_site)
 class TeachingMaterialAdmin(admin.ModelAdmin):
-    list_display = ('externalId', 'courseName')
+    list_display = ('externalId', 'courseName', 'tags_display')
 
+    def tags_display(self, obj):
+        return ", ".join([
+            tag.name for tag in obj.tags.all()
+        ])
+
+    tags_display.short_description = "Теги"
 
 
 @admin.register(LoggedIn, site=lekt_admin_site)
