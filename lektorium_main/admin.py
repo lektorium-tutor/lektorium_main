@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
-from lektorium_main.courses.models import Tag, COK, Section, Topic, TeachingMaterial, TagCategory
+from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial, TagCategory
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
 from lektorium_main.statistics.models import LoggedIn, StudentStatisticsItem
@@ -61,6 +61,12 @@ def upload(modeladmin, request, queryset):
         course.educont_upload()
 
 
+@admin.register(Course, site=lekt_admin_site)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ('courseName', 'externalId',)
+    search_fields = ('courseName', 'externalId')
+
+
 @admin.register(COK, site=lekt_admin_site)
 class COKAdmin(admin.ModelAdmin):
     list_display = ('courseName', 'externalLink', 'courseDescription')
@@ -72,12 +78,14 @@ class COKAdmin(admin.ModelAdmin):
 @admin.register(Section, site=lekt_admin_site)
 class SectionAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
-    autocomplete_fields = ["externalParent", ]
+    search_fields = ('externalId', 'courseName')
+    autocomplete_fields = ['externalParent', ]
 
 
 @admin.register(Topic, site=lekt_admin_site)
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
+    autocomplete_fields = ('externalParent',)
 
 
 @admin.register(TeachingMaterial, site=lekt_admin_site)
