@@ -6,7 +6,7 @@ from lektorium_main.profile.models import Profile, TeacherProfile, StudentProfil
 from ninja.orm import create_schema
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseServerError
+from django.http import HttpResponseServerError, HttpResponse
 # from common.djangoapps.third_party_auth.models import get_setting
 import jwt
 import os
@@ -105,14 +105,14 @@ UserProfileSchema = create_schema(
 #         "success": True
 #     }
 
-@api.get("/me", auth=django_auth, response=UserProfileSchema)
+@api.get("/me", auth=django_auth)
 def me(request):
     try:
         user = get_object_or_404(User, username=request.auth)
         profile = Profile.get_polymorph_profile(user)
         return profile
     except:
-        return {"success": False}
+        return HttpResponse({"success": False})
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
