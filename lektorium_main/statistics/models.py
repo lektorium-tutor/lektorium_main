@@ -51,20 +51,20 @@ class StudentStatisticsItem(TimeStampedModel):
         verbose_name_plural = 'записи статистики'
 
 
-@receiver(user_logged_in)
-def collect_logged_in(sender, request, user, **kwargs):
-    if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
-        try:
-            if user.verified_profile_educont.role == Profile.Role.STUDENT:
-                profile_id = user.verified_profile_educont.profile_id  # You may need to define the profile role
-            else:
-                profile_id = None
-            LoggedIn.objects.create(
-                user=user,
-                profile_id=profile_id
-            )
-        except Exception as err:
-            logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
+# @receiver(user_logged_in)
+# def collect_logged_in(sender, request, user, **kwargs):
+#     if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
+#         try:
+            # if user.verified_profile_educont.role == Profile.Role.STUDENT:
+            #     profile_id = user.verified_profile_educont.profile_id  # You may need to define the profile role
+            # else:
+            #     profile_id = None
+            # LoggedIn.objects.create(
+            #     user=user,
+            #     profile_id=profile_id
+            # )
+#         except Exception as err:
+#             logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
 
 
 @receiver(post_save, sender=StudentModule)

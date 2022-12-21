@@ -20,9 +20,6 @@ class CokOAuth2(BaseOAuth2):
     STATE_PARAMETER = True
     SEND_USER_AGENT = True
     TOKEN_TYPE = 'Bearer'
-    EXTRA_DATA = [
-        ('username', 'username')
-    ]
 
     def state_token(self):
         """Generate csrf token to include as state parameter."""
@@ -36,8 +33,11 @@ class CokOAuth2(BaseOAuth2):
         fullname = response.get('fullName')
         name = response.get('name')
         surname = response.get('surname')
-        email = response.get('email') or ''
-        logging.warning(response)
+        if response.get('email'):
+            email = response.get('email')
+        else:
+            email = nickname + "@class.lektorium.tv"
+        # email = response.get('email') or response.get('email', nickname + "@class.lektorium.tv")
         return {
             'username': nickname,
             'email': email,

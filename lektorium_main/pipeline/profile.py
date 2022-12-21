@@ -1,4 +1,5 @@
 from lektorium_main.profile.models import (Profile, TeacherProfile, StudentProfile, EducationalInstitution, EducationalInstitutions, is_verification_educont_profile)
+from lektorium_main.statistics.models import LoggedIn
 from django.contrib.auth.models import User
 import logging
 
@@ -33,6 +34,11 @@ def create(backend, user, response, *args, **kwargs):
         fields['user'] = user
         fields['profile_id'] = profile_id
         fields['login'] = fields['login'].split('@')[0] or ''
+        if fields['email']:
+            fields['email'] = response.get('email')
+        else:
+            fields['email'] = fields['login'] + "@class.lektorium.tv"
+        logging.warning(fields)
         if educationalInstitutions:
             edu_org, created_org = EducationalInstitution.objects.update_or_create(defaults={**educationalInstitutions[0]['educationalInstitution']}, id=educationalInstitutions[0]['educationalInstitution']['id'])
             edu_orgs, created_orgs = EducationalInstitutions.objects.update_or_create(educationalInstitution=edu_org, approvedStatus=educationalInstitutions[0]['approvedStatus'], isActual=educationalInstitutions[0]['isActual']) 
@@ -40,9 +46,13 @@ def create(backend, user, response, *args, **kwargs):
 
         if fields['role'] == 'STUDENT':
             StudentProfile.objects.update_or_create(defaults={**fields}, user=user )
+            LoggedIn.objects.create(
+                user=user,
+                profile_id=profile_id
+            )
         elif fields['role'] == 'TEACHER':
             TeacherProfile.objects.update_or_create(defaults={**fields}, user=user )
-            
+
         if is_verification_educont_profile(user):
             user.is_active = False
             user.save()
