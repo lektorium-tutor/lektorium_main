@@ -74,7 +74,7 @@ class CourseAdmin(admin.ModelAdmin):
 class COKAdmin(admin.ModelAdmin):
     list_display = ('courseName', 'externalLink', 'courseDescription')
     autocomplete_fields = ('tags',)
-    readonly_fields = ('id', 'courseTypeId', 'raw_course_outline_data',)
+    readonly_fields = ('id', 'courseTypeId', 'raw_course_outline_data', 'created', 'modified',)
     search_fields = ('courseName', 'course_id')
     actions = [upload, ]
 
