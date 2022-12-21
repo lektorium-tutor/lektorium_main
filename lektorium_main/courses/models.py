@@ -141,7 +141,7 @@ class COK(Course):
 
         timestamp = int(time.time())
         with open(self.courseImageFile.path, "rb") as img_file:
-            course_image_base64 = base64.b64encode(img_file.read())
+            course_image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
         body = {"externalId": self.externalId,
                 "courseTypeId": self.courseTypeId,
                 "courseImage": course_image_base64,
