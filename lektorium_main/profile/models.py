@@ -332,6 +332,8 @@ def is_verification_educont_profile(user):
     else:
         return True
 
+is_verefication_educont_profile = is_verification_educont_profile  # For backward compatibility only
+
 def get_message_status_educont_profile(user):
     profile = Profile.get_polymorph_profile(user)
     if not profile.isActive:
