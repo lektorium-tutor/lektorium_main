@@ -141,14 +141,14 @@ class COK(Course):
 
         timestamp = int(time.time())
         with open(self.courseImageFile.path, "rb") as img_file:
-            course_image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+            course_image_base64 = f"data:image/png;base64, {base64.b64encode(img_file.read()).decode('utf-8')}"
         body = {
             "data": [
                 {"externalId": self.externalId,
                  "courseTypeId": self.courseTypeId,
                  "courseImage": course_image_base64,
                  "externalLink": self.externalLink,
-                 "grades": self.grades,
+                 "grades": [grade for grade in self.grades],
                  "courseName": self.courseName,
                  "courseDescription": self.courseDescription,
                  "tags": [{"id":tag.tag_id} for tag in self.tags.all()],
@@ -161,8 +161,8 @@ class COK(Course):
             "systemName": "Лекториум",
             "createdTimestamp": timestamp,
             "requestHash": request_hash,
-            "systemCode": settings.SYSTEM_CODE
-        }, settings.PRIVATE_KEY, algorithm="RS256")
+            "systemCode": settings.SYSTEM_CODE_EDUCONT
+        }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
 
         r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
                           data=body,
