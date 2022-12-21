@@ -79,8 +79,8 @@ class TopicAdmin(admin.ModelAdmin):
 
 @admin.register(LoggedIn, site=lekt_admin_site)
 class LoggedInAdmin(admin.ModelAdmin):
-    list_display = ('__str__',)
-    readonly_fields = ('user', 'created', 'modified')
+    list_display = ('user', 'profile_id', 'created')
+    readonly_fields = ('user', 'profile_id', 'created', 'modified')
 
 
 @admin.register(StudentStatisticsItem, site=lekt_admin_site)
