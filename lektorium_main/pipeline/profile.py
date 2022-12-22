@@ -19,6 +19,8 @@ TEACHER_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive', 'statusConfirmEmail'
 def create(backend, user, response, *args, **kwargs):
     if backend.name == 'educont':
         logging.warning("Educont profile create or update")
+        logging.warning(response)
+        logging.warning(dir(response))
         role = response.get('role')
         profile_id = response.get('id')
         educationalInstitutions = response.get('educationalInstitutions')
