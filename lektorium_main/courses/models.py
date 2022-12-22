@@ -180,7 +180,7 @@ class COK(Course):
     def courseTypeId(self):
         return 0
 
-    course_id = models.CharField('ИД курса на едх', max_length=255, blank=True, null=True)
+    course_id = models.CharField('ИД курса на едх', max_length=255, unique=True, blank=True, null=True)
 
     courseImageFile = models.ImageField('Файл изображения',
                                         help_text='Изображение не должно содержать никаких надписей. '
