@@ -52,7 +52,7 @@ class TagCategoryAdmin(admin.ModelAdmin):
 @admin.register(Tag, site=lekt_admin_site)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag_id', 'name',)
-    search_fields = ('name', 'category')
+    search_fields = ('name', 'category__name')
     # filter_vertical = ('category',)
 
     # autocomplete_fields = ["parent", ]
