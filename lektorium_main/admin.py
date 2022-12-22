@@ -142,6 +142,7 @@ class TopicAdmin(admin.ModelAdmin):
 @admin.register(TeachingMaterial, site=lekt_admin_site)
 class TeachingMaterialAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName', 'tags_display')
+    autocomplete_fields = ('tags',)
     ordering = ['order']
 
     def tags_display(self, obj):

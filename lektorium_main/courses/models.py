@@ -13,12 +13,14 @@ import requests
 from django.conf import settings
 from django.db import models
 from django_mysql.models import SetCharField
+from model_utils.models import TimeStampedModel
+from opaque_keys import InvalidKeyError
 from opaque_keys import OpaqueKey
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.content.learning_sequences.api import get_course_outline
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
-from model_utils.models import TimeStampedModel
+from xmodule.modulestore.django import modulestore
 
 from lektorium_main.core.models import BaseModel
 
@@ -114,6 +116,7 @@ class Section(Course):
     class Meta:
         verbose_name = "раздел курса"
         verbose_name_plural = "разделы курса"
+        unique_together = ['externalParent', 'order']
 
 
 class Topic(Course):
@@ -135,7 +138,7 @@ class TeachingMaterial(Course):
     def courseTypeId(self):
         return 3
 
-    externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
+    externalLink = models.URLField("Ссылка в системе-источнике", max_length=1024, blank=False, null=False)
     externalParent = models.ForeignKey(Course, related_name="teaching_materials", blank=False, null=False,
                                        on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
@@ -145,6 +148,7 @@ class TeachingMaterial(Course):
     class Meta:
         verbose_name = "материал"
         verbose_name_plural = "материалы"
+
 
 class COK(Course):
     @property
@@ -200,6 +204,10 @@ class COK(Course):
 
     def create_educont_objects(self):  # TODO: get from modulestore
         outline_data = self.get_course_outline_data()
+        try:
+            course_key = CourseKey.from_string(self.course_id)
+        except InvalidKeyError:
+            raise ValueError("Could not parse course_id {}".format(self.course_id))
 
         # Sections (=COK)
         for i, section_data in enumerate(outline_data.sections):
@@ -219,9 +227,23 @@ class COK(Course):
                             externalParent=section,
                             courseName=sequence_data.title,
                             externalId=sequence_data.usage_key.block_id,
-                            order=k
+                            order=10 * i + k
                         )
 
+                        # Get Verticals (=TeachingMaterial, as deepest element having a link)
+
+                        ms = modulestore()
+                        stored_sequence = ms.get_item(sequence_data.usage_key, depth=2)
+
+                        for p, vertical in enumerate(stored_sequence.get_children()):
+                            if not vertical.visible_to_staff_only:
+                                tm = TeachingMaterial.objects.create(
+                                    externalParent=sequence,
+                                    courseName=vertical.display_name,
+                                    externalId=vertical.location.block_id,
+                                    externalLink=f"{settings.LEARNING_BASE_URL}/{self.course_id}/{sequence_data.usage_key}/{vertical.location}",
+                                    order=100 * i + 10 * k + p
+                                )
 
     def educont_upload(self):
         """
@@ -271,5 +293,3 @@ class COK(Course):
                           headers={"Authorization": f"Bearer {encoded_token}"}
                           )
         log.warning(f"POST COURSE: {r.json()}")
-
-
