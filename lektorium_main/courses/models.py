@@ -2,7 +2,6 @@ import base64
 import hashlib
 import json
 import logging
-import time
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -12,6 +11,7 @@ import jwt
 import requests
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django_mysql.models import SetCharField
 from model_utils.models import TimeStampedModel
 from opaque_keys import InvalidKeyError
@@ -21,7 +21,7 @@ from openedx.core.djangoapps.content.learning_sequences.api import get_course_ou
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
 from xmodule.modulestore.django import modulestore
-from django.utils import timezone
+
 from lektorium_main.core.models import BaseModel
 
 log = logging.getLogger(__name__)

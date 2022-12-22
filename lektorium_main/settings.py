@@ -3,7 +3,7 @@ import logging
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
-from django.conf import settings
+
 
 def apply_settings(django_settings):
     django_settings.SOCIAL_AUTH_PIPELINE += ['lektorium_main.pipeline.profile.create', ]
@@ -39,7 +39,6 @@ wck2gRsIn/XNp7JdHjHNYO4zkT+8OHfbNFWEfgoNbCxhKBjzUHE5q6qCpUtqP15R
 4xKQKg7RWM0DV00Z5NMIcIMJ4PfemRUSWk9yIGReHgwPlYtSGjei6be6zn9qk5m9
 Q66RhL6+PGReF5QUCtUGAqIf
 -----END PRIVATE KEY-----"""
-
 
 
 sentry_sdk.init(
