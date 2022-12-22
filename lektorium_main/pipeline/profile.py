@@ -24,7 +24,7 @@ def create(backend, user, response, *args, **kwargs):
         role = response.get('role')
         profile_id = response.get('id')
         educationalInstitutions = response.get('educationalInstitutions')
-
+        allowedCourses = response.get('allowedCourses')
         if role is None:
             logging.warning("Educont profile role is None")
             return
@@ -67,9 +67,9 @@ def create(backend, user, response, *args, **kwargs):
             user.is_active = False
             user.save()
 
-        if fields['role'] == 'STUDENT' and user.is_active:
+        if fields['role'] == 'STUDENT' and user.is_active and allowedCourses:
             """Дергаем список ид курсов и записываем"""
-            ids = fields["allowedCourses"]
+            ids = allowedCourses
             if len(ids) > 0:
                 courses = COK.objects.filter(id__in=ids)
                 if courses.count() > 0:
