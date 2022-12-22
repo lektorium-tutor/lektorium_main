@@ -5,7 +5,7 @@ import logging
 import uuid
 from datetime import datetime
 from enum import Enum
-
+from pprint import pformat
 import attr
 import jwt
 import requests
@@ -206,7 +206,7 @@ class COK(Course):
     @property
     def course_image_base64(self):
         with open(self.courseImageFile.path, "rb") as img_file:
-            return f"data:image/png;base64, {base64.b64encode(img_file.read()).decode('utf-8')}"
+            return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
 
     def as_dict(self):
         return {
@@ -218,7 +218,7 @@ class COK(Course):
             'courseName': self.courseName,
             'courseDescription': self.courseDescription,
             'tags': [{'id': tag.tag_id} for tag in self.tags.all()],
-        },
+        }
 
     def get_course_outline_data(self):
         course_key = CourseKey.from_string(self.course_id)
@@ -315,7 +315,7 @@ class COK(Course):
         log.warning(f"Encoded token: {encoded_token}")
 
         r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
-                          data=body,
+                          json=body,
                           headers={"Authorization": f"Bearer {encoded_token}"}
                           )
         log.warning(f"POST COURSE: {r.status_code} - {r.text}")
