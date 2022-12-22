@@ -9,6 +9,7 @@ from enum import Enum
 import attr
 import jwt
 import requests
+from common.djangoapps.student.models import CourseEnrollment
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -16,8 +17,8 @@ from django_mysql.models import SetCharField
 from model_utils.models import TimeStampedModel
 from opaque_keys import InvalidKeyError
 from opaque_keys import OpaqueKey
-from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.django.models import UsageKeyField
+from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.content.learning_sequences.api import get_course_outline
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
@@ -204,6 +205,10 @@ class COK(Course):
     class Meta:
         verbose_name = 'курс ЦОК'
         verbose_name_plural = 'курсы ЦОК'
+
+    def enroll(self, user):
+        enrollment = CourseEnrollment.enroll(user, COK.course_id)
+        return enrollment
 
     @property
     def course_image_base64(self):

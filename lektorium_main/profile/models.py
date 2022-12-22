@@ -1,18 +1,12 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from polymorphic.models import PolymorphicModel
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-import logging
 
 from lektorium_main.core.models import BaseModel
-from lektorium_main.courses.models import COK
-import uuid
-from django.contrib.auth.signals import user_logged_in
-from common.djangoapps.student.models import CourseEnrollment
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -49,7 +43,7 @@ class Profile(PolymorphicModel, BaseModel):
     birthyear = models.CharField(max_length=50, null=True, blank=True)
 
     user = models.ForeignKey(get_user_model(), unique=True, db_index=True, related_name='verified_profile_educont',
-                                verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
+                             verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
     profile_id = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -103,28 +97,31 @@ class Profile(PolymorphicModel, BaseModel):
     def get_update_url(self):
         return reverse("lektorium_main_Profile_update", args=(self.pk,))
 
-    def update(self,*args, **kwargs):
-            for name,values in kwargs.items():
-                try:
-                    setattr(self,name,values)
-                except KeyError:
-                    pass
-            self.save()
+    def update(self, *args, **kwargs):
+        for name, values in kwargs.items():
+            try:
+                setattr(self, name, values)
+            except KeyError:
+                pass
+        self.save()
 
     @classmethod
     def get_polymorph_profile(cls, user):
-        if cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists():
-            return cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).first()
+        if cls.objects.filter(models.Q(StudentProfile___user=user) | models.Q(TeacherProfile___user=user)).exists():
+            return cls.objects.filter(
+                models.Q(StudentProfile___user=user) | models.Q(TeacherProfile___user=user)).first()
 
     @classmethod
     def is_profile_exists(cls, user):
         email = user.email
-        if cls.objects.filter(models.Q(StudentProfile___user = user) | models.Q(TeacherProfile___user = user)  ).exists():
+        if cls.objects.filter(models.Q(StudentProfile___user=user) | models.Q(TeacherProfile___user=user)).exists():
             return True
-        elif cls.objects.filter(models.Q(StudentProfile___email = email) | models.Q(TeacherProfile___email = email)  ).exists():
+        elif cls.objects.filter(
+            models.Q(StudentProfile___email=email) | models.Q(TeacherProfile___email=email)).exists():
             return True
         else:
             return False
+
 
 class EducationalInstitution(BaseModel):
     """
@@ -186,9 +183,11 @@ class EducationalInstitution(BaseModel):
         profile = cls(user=user)
         return profile
 
+
 class EducationalInstitutions(BaseModel):
     # Relationships
-    educationalInstitution = models.ForeignKey("lektorium_main.EducationalInstitution", on_delete=models.CASCADE, blank=True, null=True)
+    educationalInstitution = models.ForeignKey("lektorium_main.EducationalInstitution", on_delete=models.CASCADE,
+                                               blank=True, null=True)
 
     # Fields
     approvedStatus = models.CharField(max_length=50)
@@ -293,6 +292,7 @@ class Grade(BaseModel):
     def __str__(self):
         return str(self.pk)
 
+
 class StatusMessage(BaseModel):
     empty_message = 'Ошибка: пустое сообщение, обратитесь к Администратору образовательной платформы.'
 
@@ -305,7 +305,8 @@ class StatusMessage(BaseModel):
         NONE_APPROVED_STATUS = 'NONE_APPROVED_STATUS'
         GRADUATE_APPROVED_STATUS = 'GRADUATE_APPROVED_STATUS'
 
-    status_type = models.CharField('Тип сообщения',help_text='ВНИМАНИЕ! Типы сообщений униакальные для каждой записи', max_length=50, choices=StatusType.choices, unique=True)
+    status_type = models.CharField('Тип сообщения', help_text='ВНИМАНИЕ! Типы сообщений униакальные для каждой записи',
+                                   max_length=50, choices=StatusType.choices, unique=True)
     message = models.CharField('Сообщение', max_length=400, blank=True, null=True)
 
     class Meta:
@@ -322,6 +323,7 @@ class StatusMessage(BaseModel):
         except:
             return cls.empty_message
 
+
 def is_verification_educont_profile(user):
     if user.is_superuser or user.is_staff:
         return False
@@ -332,7 +334,9 @@ def is_verification_educont_profile(user):
     else:
         return True
 
+
 is_verefication_educont_profile = is_verification_educont_profile  # For backward compatibility only
+
 
 def get_message_status_educont_profile(user):
     profile = Profile.get_polymorph_profile(user)
@@ -352,9 +356,3 @@ def get_message_status_educont_profile(user):
         return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
     else:
         return StatusMessage.empty_message
-
-
-@receiver(post_save, sender=Profile)
-def enroll_user(sender, instance, **kwargs):
-    user = get_user_model().objects.get(pk=instance.user)
-    CourseEnrollment.enroll(user, COK.course_id)
