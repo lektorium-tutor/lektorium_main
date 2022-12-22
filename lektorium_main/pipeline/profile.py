@@ -1,30 +1,32 @@
 import logging
 
-from lektorium_main.courses.models import COK
-from lektorium_main.profile.models import (TeacherProfile, StudentProfile, EducationalInstitution,
-                                           EducationalInstitutions, is_verification_educont_profile)
+from lektorium_main.profile.models import (
+    TeacherProfile, StudentProfile,
+    EducationalInstitution,
+    EducationalInstitutions,
+    is_verification_educont_profile
+)
 from lektorium_main.statistics.models import LoggedIn
 
-STUDENT_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive', 'statusConfirmEmail', 'login', 'fullName', 'name',
-                          'surname',
-                          'middleName',
-                          'email']
+STUDENT_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive',
+                          'statusConfirmEmail', 'login', 'fullName', 'name',
+                          'surname', 'middleName', 'email']
 
-TEACHER_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive', 'statusConfirmEmail', 'login', 'fullName', 'name',
-                          'surname',
-                          'middleName',
-                          'email']
+TEACHER_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive',
+                          'statusConfirmEmail', 'login', 'fullName', 'name',
+                          'surname', 'middleName', 'email']
 
 
 def create(backend, user, response, *args, **kwargs):
     if backend.name == 'educont':
+        fields = None
         logging.warning("Educont profile create or update")
         logging.warning(response)
         logging.warning(dir(response))
         role = response.get('role')
         profile_id = response.get('id')
-        educationalInstitutions = response.get('educationalInstitutions')
-        allowedCourses = response.get('allowedCourses')
+        educationalInstitutions = response.get('educationalInstitutions', [])
+        allowedCourses = response.get('allowedCourses', [])
         if role is None:
             logging.warning("Educont profile role is None")
             return
@@ -44,7 +46,7 @@ def create(backend, user, response, *args, **kwargs):
             fields['email'] = response.get('email')
         else:
             fields['email'] = fields['login'] + "@class.lektorium.tv"
-        if educationalInstitutions:
+        if len(educationalInstitutions) > 0:
             edu_org, created_org = EducationalInstitution.objects.update_or_create(
                 defaults={**educationalInstitutions[0]['educationalInstitution']},
                 id=educationalInstitutions[0]['educationalInstitution']['id'])
@@ -55,23 +57,19 @@ def create(backend, user, response, *args, **kwargs):
             fields['educationalInstitutions'] = edu_orgs
 
         if fields['role'] == 'STUDENT':
-            StudentProfile.objects.update_or_create(defaults={**fields}, id=profile_id)
+            profile, _ = StudentProfile.objects.update_or_create(
+                defaults={**fields}, id=profile_id
+            )
+            profile.actualize_enrollments(allowedCourses)
             LoggedIn.objects.create(
                 user=user,
                 profile_id=profile_id
             )
         elif fields['role'] == 'TEACHER':
-            TeacherProfile.objects.update_or_create(defaults={**fields}, id=profile_id)
+            profile, _ = TeacherProfile.objects.update_or_create(
+                defaults={**fields}, id=profile_id
+            )
 
         if is_verification_educont_profile(user):
             user.is_active = False
             user.save()
-
-        if fields['role'] == 'STUDENT' and user.is_active and allowedCourses:
-            """Дергаем список ид курсов и записываем"""
-            ids = allowedCourses
-            if len(ids) > 0:
-                courses = COK.objects.filter(externalId__in=ids)
-                if courses.count() > 0:
-                    for course in courses:
-                        course.enroll(user)

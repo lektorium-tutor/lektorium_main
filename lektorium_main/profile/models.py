@@ -1,5 +1,6 @@
 import uuid
 
+from common.djangoapps.student.models import CourseEnrollment
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
@@ -7,6 +8,7 @@ from django.urls import reverse
 from polymorphic.models import PolymorphicModel
 
 from lektorium_main.core.models import BaseModel
+from lektorium_main.courses.models import COK
 
 
 class Profile(PolymorphicModel, BaseModel):
@@ -49,6 +51,29 @@ class Profile(PolymorphicModel, BaseModel):
     class Meta:
         pass
 
+    def actualize_enrollments(self, ids: list):
+        user = get_user_model().objects.get(pk=self.user.id)
+        if not user.is_active:
+            for e in CourseEnrollment.enrollments_for_user(user=user):
+                e.unenroll(user, e.course_id)
+            return None
+
+        if self.role == 'STUDENT':
+            courses_to_be_enrolled_in = COK.objects.filter(externalId__in=ids).values_list('course_id', flat=True)
+            all_enrollments = CourseEnrollment.enrollments_for_user(user=user)
+            if all_enrollments.count() > 0:
+                for enrollment in all_enrollments:
+                    if enrollment.course.id not in courses_to_be_enrolled_in:
+                        enrollment.unenroll(user, enrollment.course.id)
+
+            if len(courses_to_be_enrolled_in) > 0:
+                for course_id in courses_to_be_enrolled_in:
+                    CourseEnrollment.enroll(user, course_id)
+
+        return COK.objects.filter(
+            course_id__in=CourseEnrollment.enrollments_for_user(user=user).values_list(
+                'course', flat=True)).values_list('externalId', flat=True)
+
     @property
     def is_empty_edu_insts(self):
         if self.educationalInstitutions:
@@ -72,7 +97,6 @@ class Profile(PolymorphicModel, BaseModel):
             return self.educationalInstitutions.isActual
         else:
             return False
-
 
     @property
     def is_approved(self):
@@ -106,7 +130,7 @@ class Profile(PolymorphicModel, BaseModel):
 
     @property
     def is_none_approved(self):
-        if self.is_empty_edu_insts:    
+        if self.is_empty_edu_insts:
             if self.educationalInstitutions.approvedStatus == None or self.educationalInstitutions.approvedStatus == '':
                 return True
             else:
