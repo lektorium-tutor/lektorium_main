@@ -50,41 +50,67 @@ class Profile(PolymorphicModel, BaseModel):
         pass
 
     @property
-    def is_empty_edu_inst(self):
-        if self.educationalInstitutions.educationalInstitution:
+    def is_empty_edu_insts(self):
+        if self.educationalInstitutions:
             return True
+        else:
+            return False
+
+    @property
+    def is_empty_edu_inst(self):
+        if self.is_empty_edu_insts:
+            if self.educationalInstitutions.educationalInstitution:
+                return True
+            else:
+                return False
         else:
             return False
 
     @property
     def is_actual(self):
-        return self.educationalInstitutions.isActual
+        if self.is_empty_edu_insts:
+            return self.educationalInstitutions.isActual
+        else:
+            return False
+
 
     @property
     def is_approved(self):
-        if self.educationalInstitutions.approvedStatus == 'APPROVED':
-            return True
+        if self.is_empty_edu_insts:
+            if self.educationalInstitutions.approvedStatus == 'APPROVED':
+                return True
+            else:
+                return False
         else:
             return False
 
     @property
     def is_not_approved(self):
-        if self.educationalInstitutions.approvedStatus == 'NOT_APPROVED':
-            return True
+        if self.is_empty_edu_insts:
+            if self.educationalInstitutions.approvedStatus == 'NOT_APPROVED':
+                return True
+            else:
+                return False
         else:
             return False
 
     @property
     def is_graduate_approved(self):
-        if self.educationalInstitutions.approvedStatus == 'GRADUATE':
-            return True
+        if self.is_empty_edu_insts:
+            if self.educationalInstitutions.approvedStatus == 'GRADUATE':
+                return True
+            else:
+                return False
         else:
             return False
 
     @property
     def is_none_approved(self):
-        if self.educationalInstitutions.approvedStatus == None or self.educationalInstitutions.approvedStatus == '':
-            return True
+        if self.is_empty_edu_insts:    
+            if self.educationalInstitutions.approvedStatus == None or self.educationalInstitutions.approvedStatus == '':
+                return True
+            else:
+                return False
         else:
             return False
 

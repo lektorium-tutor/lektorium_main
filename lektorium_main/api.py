@@ -132,14 +132,13 @@ def delete_profile(request, profile_id: str):
 # не работает просто тесты.
 @api.get('/test', auth=django_auth)
 def test(request):
-    path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(
-        settings.SYSTEM_CODE_EDUCONT)
+    # path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(
+    #     settings.SYSTEM_CODE_EDUCONT)
     path = 'https://api.dev.educont.ru/api/v1/public/sse/connect'
     token = gen_token(request=request, path=path)
-    test = requests.get(url=path,
-                        headers={"Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token)})
+    # test = requests.get(url=path, headers={"Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token)})
     logging.warning(test)
-    return test
+    return token
 
 
 @api.get('/token', auth=django_auth)
