@@ -23,6 +23,7 @@ from openedx.core.djangoapps.content.learning_sequences.api import get_course_ou
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
 from xmodule.modulestore.django import modulestore
+from opaque_keys.edx.keys import CourseKey
 
 from lektorium_main.core.models import BaseModel
 
@@ -207,7 +208,8 @@ class COK(Course):
         verbose_name_plural = 'курсы ЦОК'
 
     def enroll(self, user):
-        enrollment = CourseEnrollment.enroll(user, COK.course_id)
+        course_key = CourseKey.from_string(str(COK.course_id))
+        enrollment = CourseEnrollment.enroll(user, course_key)
         return enrollment
 
     @property
