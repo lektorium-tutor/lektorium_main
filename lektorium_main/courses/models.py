@@ -208,7 +208,7 @@ class COK(Course):
         verbose_name_plural = 'курсы ЦОК'
 
     def enroll(self, user):
-        course_key = CourseKey.from_string(str(COK.course_id))
+        course_key = CourseKey.from_string(str(self.course_id))
         enrollment = CourseEnrollment.enroll(user, course_key)
         return enrollment
 
