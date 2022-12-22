@@ -71,7 +71,7 @@ def create(backend, user, response, *args, **kwargs):
             """Дергаем список ид курсов и записываем"""
             ids = fields["allowedCourses"]
             if len(ids) > 0:
-                courses = COK.objects.filter(id__in=ids)
+                courses = COK.objects.filter(externalId__in=ids)
                 if courses.count() > 0:
                     for course in courses:
                         course.enroll(user)
