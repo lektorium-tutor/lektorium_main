@@ -2,6 +2,7 @@
 import json
 
 from django.contrib import admin
+from django.contrib import messages
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
@@ -61,7 +62,15 @@ class TagAdmin(admin.ModelAdmin):
 @admin.action(description='POST course')
 def upload(modeladmin, request, queryset):
     for course in queryset:
-        course.educont_upload()
+        response = course.educont_upload()
+        messages.info(request, f"{response.status_code}: {response.text}")
+
+
+@admin.action(description='DELETE course')
+def delete(modeladmin, request, queryset):
+    for course in queryset:
+        response = course.educont_delete()
+        messages.info(request, f"{response.status_code}: {response.text}")
 
 
 @admin.action(description='create_educont_objects')
@@ -166,7 +175,7 @@ class LoggedInAdmin(admin.ModelAdmin):
 
 @admin.register(StudentStatisticsItem, site=lekt_admin_site)
 class StudentStatisticsItemAdmin(admin.ModelAdmin):
-    list_display = ('user', 'module_type', 'position', 'score', 'created')
+    list_display = ('user', 'profile_id', 'module_type', 'position', 'score', 'created')
     fields = (
         'user', 'student_module', 'module_type', 'position', 'score',
         'block_id', 'block_type', 'course_key',

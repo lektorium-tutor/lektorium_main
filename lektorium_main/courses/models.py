@@ -5,7 +5,7 @@ import logging
 import uuid
 from datetime import datetime
 from enum import Enum
-from pprint import pformat
+
 import attr
 import jwt
 import requests
@@ -17,6 +17,7 @@ from model_utils.models import TimeStampedModel
 from opaque_keys import InvalidKeyError
 from opaque_keys import OpaqueKey
 from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.django.models import UsageKeyField
 from openedx.core.djangoapps.content.learning_sequences.api import get_course_outline
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
@@ -97,6 +98,7 @@ class Course(PolymorphicModel, TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     externalId = models.CharField(unique=True, max_length=255)
     courseName = models.CharField("Название учебного материала", max_length=255, blank=False, null=False)
+    block_key = UsageKeyField(max_length=255, blank=True, null=True)
 
     # courseTypeId = models.PositiveSmallIntegerField("id типа учебного материала", choices=COURSE_TYPES)
 
@@ -319,3 +321,17 @@ class COK(Course):
                           headers={"Authorization": f"Bearer {encoded_token}"}
                           )
         log.warning(f"POST COURSE: {r.status_code} - {r.text}")
+        return r
+
+    def educont_delete(self):
+        request_path = f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses?courses={self.externalId}"
+        request_hash = hashlib.md5(request_path.encode()).hexdigest()
+        encoded_token = jwt.encode({
+            "systemName": "Лекториум",
+            "createdTimestamp": int(timezone.now().timestamp()),
+            "requestHash": request_hash,
+            "systemCode": settings.SYSTEM_CODE_EDUCONT
+        }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
+
+        r = requests.delete(request_path)
+        return r

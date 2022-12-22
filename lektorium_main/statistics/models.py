@@ -1,16 +1,14 @@
 import json
 import logging
+from completion.models import BlockCompletion
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.signals import user_logged_in
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from lms.djangoapps.courseware.models import StudentModule
 from model_utils.models import TimeStampedModel
-
-from lektorium_main.profile.models import Profile
+from lektorium_main.courses.models import Course, Section, COK, Topic, TeachingMaterial
 
 logger = logging.getLogger(__name__)
 
@@ -50,34 +48,47 @@ class StudentStatisticsItem(TimeStampedModel):
         verbose_name = 'запись статистики'
         verbose_name_plural = 'записи статистики'
 
-
-# @receiver(user_logged_in)
-# def collect_logged_in(sender, request, user, **kwargs):
-#     if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
-#         try:
-            # if user.verified_profile_educont.role == Profile.Role.STUDENT:
-            #     profile_id = user.verified_profile_educont.profile_id  # You may need to define the profile role
-            # else:
-            #     profile_id = None
-            # LoggedIn.objects.create(
-            #     user=user,
-            #     profile_id=profile_id
-            # )
-#         except Exception as err:
-#             logger.error(f"Unexpected {err=}, {type(err)=}, , profile_id: {profile_id}")
+    example = {
+        "data": [
+            {
+                "statisticType": "ENTER_TO_EDUCATION_PLATFORM",
+                "externalId": "",
+                "status": "",
+                "createdAt": "2022-01-25T08:08:55.125Z",
+                "profileId": "9d0b9750-5ad9-4311-a0bc-06ab85eddc04"
+            },
+            {
+                "statisticType": "ENTER_TO_STUDY_SUBJECT",
+                "externalId": "rus_1_11",
+                "status": "true",
+                "createdAt": "2022-01-25T08:08:55.125Z",
+                "profileId": "9d0b9750-5ad9-4311-a0bc-06ab85eddc04"
+            }
+        ]
+    }
 
 
 @receiver(post_save, sender=StudentModule)
 def save_student_statistics_item(sender, instance, **kwargs):
     user = get_user_model().objects.get(pk=instance.student_id)
-    if user.verified_profile_educont:
-        profile_id = user.verified_profile_educont.profile_id
-    else:
+    try:
+        if user.verified_profile_educont:
+            profile_id = user.verified_profile_educont.profile_id
+    except:
         profile_id = None  # TODO: for local testing, remove
+
     state = json.loads(instance.state)
     logger.warning(f'STATE !!!!!!!!!!!!!! {state}')
     score_raw = state.get('score', None)
     done = state.get('done', None)
+    position = state.get('position', None)
+
+    # если существует position, понимаем, что юзер зашел на vertical
+    if position:
+        section = Section.objects.get(external_id=instance.module_state_key.block_id)
+        vertical = section.topics.all[position]
+        # BlockCompletion.objects.get(block_key=block.scope_ids.usage_id)
+        logger.warning(f"!!! VERTICAL {vertical}")
 
     if score_raw:
         score = score_raw['raw_earned'] / score_raw['raw_possible']
@@ -92,7 +103,7 @@ def save_student_statistics_item(sender, instance, **kwargs):
         block_id=instance.module_state_key.block_id,
         block_type=instance.module_state_key.block_type,
         course_key=instance.module_state_key.course_key,
-        position=state.get('position', None),
+        position=position,
         score=score,
         done=done,
     )
