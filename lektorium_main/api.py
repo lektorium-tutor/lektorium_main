@@ -9,11 +9,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from ninja import NinjaAPI, ModelSchema
 from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
-from datetime import datetime, timezone
+from datetime import datetime, timezone as timezone_datetime
+from django.utils import timezone
 
 from lektorium_main.profile.models import Profile
 
@@ -169,14 +169,14 @@ def genToken(request):
 
 def utcformat(dt, timespec='milliseconds'):
     """convert datetime to string in UTC format (YYYY-mm-ddTHH:MM:SS.mmmZ)"""
-    iso_str = dt.astimezone(timezone.utc).isoformat('T', timespec)
+    iso_str = dt.astimezone(timezone_datetime.utc).isoformat('T', timespec)
     return iso_str.replace('+00:00', 'Z')
 
 @api.post('/feedback', auth=django_auth)
 def feedback(request):
     # try:
-    now = utcformat(datetime.now(tz=timezone.utc))
-    logging.warning(timezone.now())
+    now = utcformat(datetime.now(tz=timezone_datetime.utc))
+    logging.warning(timezone_datetime.now())
     body = json.loads(request.body.decode())
     path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
     method = "POST"
