@@ -48,10 +48,8 @@ def gen_tokenV2(method, path, body=None):
     timestamp = int(timezone.now().timestamp())
     logging.warning(path)
     logging.warning(method)
-    logging.warning(settings.SYSTEM_CODE_EDUCONT)
-    logging.warning(settings.PRIVATE_KEY_EDUCONT)
     if method == "POST" or method == "PUT":
-        requestHash = hashlib.md5(body).hexdigest()
+        requestHash = hashlib.md5(json.dumps(body).encode("utf-8")).hexdigest()
     else:
         requestHash = hashlib.md5(path.encode()).hexdigest()
 
@@ -169,25 +167,22 @@ def genToken(request):
     return token
 
 
-@api.post('/feedback')
+@api.post('/feedback', auth=django_auth)
 def feedback(request):
     # try:
+    timestamp = int(timezone.now().timestamp())
     body = json.loads(request.body.decode())
     path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
-    path = body['path']
-    method = body['method']
-    token = gen_tokenV2(method=method, path=path)
-    feedback = requests.post(url=path, data=request.body,
-                             headers={"Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token)})
-    logging.warning(feedback)
-    return {"success": True}
-    # except:
-    #     raise HttpResponseServerError()
-# api.put("/me", auth=django_auth)
-# def update_me(request):
-#     try:
-#         user = get_object_or_404(User, username=request.auth)
-#         profile = get_object_or_404(Profile, user=user)
-#         Profile.objects.update()
-#     except:
-#         return HttpResponseServerError()
+    method = "POST"
+    user = get_object_or_404(User, username=request.auth)
+    profile = Profile.get_polymorph_profile(user)
+    if profile:
+        body['profileId'] = profile
+        body['externalUserId'] = user.id
+        body['createdAt'] = timestamp
+        logging.warning(body)
+        token = gen_tokenV2(method=method, path=path, body=body)
+        response = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+        return {"status": response.status_code}
+    else:
+        return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
