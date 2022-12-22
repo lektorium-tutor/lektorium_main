@@ -85,7 +85,7 @@ def save_student_statistics_item(sender, instance, **kwargs):
 
     # если существует position, понимаем, что юзер зашел на vertical
     if position:
-        section = Section.objects.get(external_id=instance.module_state_key.block_id)
+        section = Section.objects.get(externalId=instance.module_state_key.block_id)
         vertical = section.topics.all[position]
         # BlockCompletion.objects.get(block_key=block.scope_ids.usage_id)
         logger.warning(f"!!! VERTICAL {vertical}")
