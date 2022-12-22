@@ -63,10 +63,12 @@ def upload(modeladmin, request, queryset):
     for course in queryset:
         course.educont_upload()
 
+
 @admin.action(description='create_educont_objects')
 def create_educont_objects(modeladmin, request, queryset):
     for course in queryset:
         course.create_educont_objects()
+
 
 @admin.register(Course, site=lekt_admin_site)
 class CourseAdmin(admin.ModelAdmin):
@@ -129,6 +131,7 @@ class SectionAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
     search_fields = ('externalId', 'courseName')
     autocomplete_fields = ['externalParent', ]
+    exclude_fields = ['order', ]
     ordering = ['order']
 
 
@@ -136,6 +139,7 @@ class SectionAdmin(admin.ModelAdmin):
 class TopicAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName')
     autocomplete_fields = ('externalParent',)
+    exclude_fields = ['order', ]
     ordering = ['order']
 
 
@@ -143,6 +147,7 @@ class TopicAdmin(admin.ModelAdmin):
 class TeachingMaterialAdmin(admin.ModelAdmin):
     list_display = ('externalId', 'courseName', 'tags_display')
     autocomplete_fields = ('tags',)
+    exclude_fields = ['order', ]
     ordering = ['order']
 
     def tags_display(self, obj):

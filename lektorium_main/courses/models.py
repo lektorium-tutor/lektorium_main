@@ -21,7 +21,7 @@ from openedx.core.djangoapps.content.learning_sequences.api import get_course_ou
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
 from xmodule.modulestore.django import modulestore
-
+from django.utils import timezone
 from lektorium_main.core.models import BaseModel
 
 log = logging.getLogger(__name__)
@@ -109,14 +109,22 @@ class Section(Course):
     def courseTypeId(self):
         return 1
 
-    externalParent = models.ForeignKey("COK", related_name="sections", blank=False, null=False,
+    externalParent = models.ForeignKey('COK', related_name='sections', blank=False, null=False,
                                        on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        verbose_name = "раздел курса"
-        verbose_name_plural = "разделы курса"
+        verbose_name = 'раздел курса'
+        verbose_name_plural = 'разделы курса'
         unique_together = ['externalParent', 'order']
+
+    def as_dict(self):
+        return {
+            'externalId': self.externalId,
+            'courseTypeId': self.courseTypeId,
+            'externalParentId': self.externalParent.externalId,
+            'courseName': self.courseName
+        }
 
 
 class Topic(Course):
@@ -124,13 +132,21 @@ class Topic(Course):
     def courseTypeId(self):
         return 2
 
-    externalParent = models.ForeignKey(Course, related_name="topics", blank=False, null=False,
+    externalParent = models.ForeignKey(Course, related_name='topics', blank=False, null=False,
                                        on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        verbose_name = "тема"
-        verbose_name_plural = "темы"
+        verbose_name = 'тема'
+        verbose_name_plural = 'темы'
+
+    def as_dict(self):
+        return {
+            'externalId': self.externalId,
+            'courseTypeId': self.courseTypeId,
+            'externalParentId': self.externalParent.externalId,
+            'courseName': self.courseName
+        }
 
 
 class TeachingMaterial(Course):
@@ -138,16 +154,25 @@ class TeachingMaterial(Course):
     def courseTypeId(self):
         return 3
 
-    externalLink = models.URLField("Ссылка в системе-источнике", max_length=1024, blank=False, null=False)
-    externalParent = models.ForeignKey(Course, related_name="teaching_materials", blank=False, null=False,
+    externalLink = models.URLField('Ссылка в системе-источнике', max_length=1024, blank=False, null=False)
+    externalParent = models.ForeignKey(Course, related_name='teaching_materials', blank=False, null=False,
                                        on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
 
     tags = models.ManyToManyField(Tag)
 
     class Meta:
-        verbose_name = "материал"
-        verbose_name_plural = "материалы"
+        verbose_name = 'материал'
+        verbose_name_plural = 'материалы'
+
+    def as_dict(self):
+        return {
+            'externalId': self.externalId,
+            'courseTypeId': self.courseTypeId,
+            'externalParentId': self.externalParent.externalId,
+            'courseName': self.courseName,
+            'tags': [{'id': tag.tag_id} for tag in self.tags.all()],
+        }
 
 
 class COK(Course):
@@ -155,17 +180,18 @@ class COK(Course):
     def courseTypeId(self):
         return 0
 
-    course_id = models.CharField("ИД курса на едх", max_length=255, blank=True, null=True)
+    course_id = models.CharField('ИД курса на едх', max_length=255, blank=True, null=True)
 
-    courseImageFile = models.ImageField("Файл изображения",
-                                        help_text="Изображение не должно содержать никаких надписей. "
-                                                  "Разрешение - 600x600 пикселей (допускается 500х500). "
-                                                  "Формат – jpg, jpeg, png. Размер – не более 5Мб.",
+    courseImageFile = models.ImageField('Файл изображения',
+                                        help_text='Изображение не должно содержать никаких надписей. '
+                                                  'Разрешение - 600x600 пикселей (допускается 500х500). '
+                                                  'Формат – jpg, jpeg, png. Размер – не более 5Мб.',
+                                        upload_to='lektorium/course_images/',
                                         blank=False, null=False)
-    externalLink = models.URLField("Ссылка в системе-источнике", blank=False, null=False)
-    courseDescription = models.TextField("Описание учебного материала", blank=False, null=False)
+    externalLink = models.URLField('Ссылка в системе-источнике', blank=False, null=False)
+    courseDescription = models.TextField('Описание учебного материала', blank=False, null=False)
     grades = SetCharField(
-        verbose_name="Массив классов, которым доступен учебный материал",
+        verbose_name='Массив классов, которым доступен учебный материал',
         base_field=models.PositiveSmallIntegerField(),
         size=16,
         max_length=(9 + 7 * 2),  # 1..16,
@@ -174,8 +200,25 @@ class COK(Course):
     tags = models.ManyToManyField(Tag, verbose_name='Теги')
 
     class Meta:
-        verbose_name = "курс ЦОК"
-        verbose_name_plural = "курсы ЦОК"
+        verbose_name = 'курс ЦОК'
+        verbose_name_plural = 'курсы ЦОК'
+
+    @property
+    def course_image_base64(self):
+        with open(self.courseImageFile.path, "rb") as img_file:
+            return f"data:image/png;base64, {base64.b64encode(img_file.read()).decode('utf-8')}"
+
+    def as_dict(self):
+        return {
+            'externalId': self.externalId,
+            'courseTypeId': self.courseTypeId,
+            'courseImage': self.course_image_base64,
+            'externalLink': self.externalLink,
+            'grades': [grade for grade in self.grades],
+            'courseName': self.courseName,
+            'courseDescription': self.courseDescription,
+            'tags': [{'id': tag.tag_id} for tag in self.tags.all()],
+        },
 
     def get_course_outline_data(self):
         course_key = CourseKey.from_string(self.course_id)
@@ -202,12 +245,12 @@ class COK(Course):
             value_serializer=json_serializer,
         )
 
-    def create_educont_objects(self):  # TODO: get from modulestore
+    def create_educont_objects(self):  # TODO: maybe get from modulestore
         outline_data = self.get_course_outline_data()
         try:
             course_key = CourseKey.from_string(self.course_id)
         except InvalidKeyError:
-            raise ValueError("Could not parse course_id {}".format(self.course_id))
+            raise ValueError('Could not parse course_id {}'.format(self.course_id))
 
         # Sections (=COK)
         for i, section_data in enumerate(outline_data.sections):
@@ -246,40 +289,21 @@ class COK(Course):
                                 )
 
     def educont_upload(self):
-        """
-        {
-            "data": [
-        {
-                "externalId": "math11",
-                "courseTypeId":"4",
-                "courseImage": "data:image/png;base64,iVBORw0KGgoAAAANSU...hEUgAAABgAAAAYCA",
-                "externalLink": "https://.....ru",
-                "grades": "["11" ]",
-                "courseName": "Степени и логарифмы (10-11 класс)",
-              "courseDescription": "Логарифмы - сложная тема в школьном курсе математики. И причина состоит в том, что даже для их определения используются неудачные формулировки...",
-                "tags":"[ { "id": "bbd7befb-10d3-4bd5-8f65-17b3073e20ec" },   { "id": "78d7befb-22d3-4bd5-8f65-17b3073e20ec" }]"
-        }
-            ]
-        }
-        """
 
-        timestamp = int(time.time())
-        with open(self.courseImageFile.path, "rb") as img_file:
-            course_image_base64 = f"data:image/png;base64, {base64.b64encode(img_file.read()).decode('utf-8')}"
+        timestamp = int(timezone.now().timestamp())
+        data = [self.as_dict()]
+
+        for section in self.sections.all():
+            data.append(section.as_dict())
+            for topic in section.topics.all():
+                data.append(topic.as_dict())
+                for tm in topic.teaching_materials.all():
+                    data.append(tm.as_dict())
+
         body = {
-            "data": [
-                {"externalId": self.externalId,
-                 "courseTypeId": self.courseTypeId,
-                 "courseImage": course_image_base64,
-                 "externalLink": self.externalLink,
-                 "grades": [grade for grade in self.grades],
-                 "courseName": self.courseName,
-                 "courseDescription": self.courseDescription,
-                 "tags": [{"id": tag.tag_id} for tag in self.tags.all()],
-                 }
-            ]
+            "data": data
         }
-        request_hash = hashlib.md5(json.dumps(body)).hexdigest()
+        request_hash = hashlib.md5(json.dumps(body).encode('utf-8')).hexdigest()
 
         encoded_token = jwt.encode({
             "systemName": "Лекториум",
@@ -288,8 +312,10 @@ class COK(Course):
             "systemCode": settings.SYSTEM_CODE_EDUCONT
         }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
 
+        log.warning(f"Encoded token: {encoded_token}")
+
         r = requests.post(f"{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses",
                           data=body,
                           headers={"Authorization": f"Bearer {encoded_token}"}
                           )
-        log.warning(f"POST COURSE: {r.json()}")
+        log.warning(f"POST COURSE: {r.status_code} - {r.text}")
