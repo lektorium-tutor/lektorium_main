@@ -46,12 +46,10 @@ def create(backend, user, response, *args, **kwargs):
             edu_org, created_org = EducationalInstitution.objects.update_or_create(
                 defaults={**educationalInstitutions[0]['educationalInstitution']},
                 id=educationalInstitutions[0]['educationalInstitution']['id'])
-            edu_orgs, created_orgs = EducationalInstitutions.objects.update_or_create(educationalInstitution=edu_org,
-                                                                                      approvedStatus=
-                                                                                      educationalInstitutions[0][
-                                                                                          'approvedStatus'], isActual=
-                                                                                      educationalInstitutions[0][
-                                                                                          'isActual'])
+            edu_orgs, created_orgs = EducationalInstitutions.objects.update_or_create(
+                educationalInstitution=edu_org,
+                approvedStatus=educationalInstitutions[0]['approvedStatus'],
+                isActual=educationalInstitutions[0]['isActual'])
             fields['educationalInstitutions'] = edu_orgs
 
         if fields['role'] == 'STUDENT':
