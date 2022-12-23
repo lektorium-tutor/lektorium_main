@@ -12,7 +12,6 @@ class EducontAuthAlreadyAssociatedMiddleware(SocialAuthExceptionMiddleware):
     def process_exception(self, request, exception):
         if hasattr(social_exceptions, exception.__class__.__name__):
             # Here you can handle the exception as you wish
-            messages.error(request, "Govno" )
             return redirect('dashboard')
         else:
             return super(EducontAuthAlreadyAssociatedMiddleware, self).process_exception(request, exception)
