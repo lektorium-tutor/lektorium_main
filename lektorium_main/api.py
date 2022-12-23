@@ -14,9 +14,9 @@ from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
 import datetime
 from django.utils import timezone
-import time
 
 from lektorium_main.profile.models import Profile
+log = logging.getLogger(__name__)
 
 api = NinjaAPI(csrf=True)
 
@@ -31,7 +31,6 @@ log = logging.getLogger(__name__)
 
 def gen_token(request, path):
     timestamp = int(timezone.now().timestamp())
-    timestamp = int(time.time())
     if request.method == "POST" or request.method == "PUT":
         requestHash = hashlib.md5(request.body).hexdigest()
     else:
@@ -48,9 +47,7 @@ def gen_token(request, path):
 
 def gen_tokenV2(method, path, body=None):
     timestamp = int(timezone.now().timestamp())
-    timestamp = int(time.time())
-    logging.warning(path)
-    logging.warning(method)
+    
     if method == "POST" or method == "PUT":
         requestHash = hashlib.md5(json.dumps(body).encode("utf-8")).hexdigest()
     else:
@@ -136,10 +133,9 @@ def delete_profile(request, profile_id: str):
 def test(request):
     # path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(
     #     settings.SYSTEM_CODE_EDUCONT)
-    path = 'https://api.dev.educont.ru/api/v1/public/sse/connect'
+    path = f'{settings.EDUCONT_BASE_URL}/api/v1/public/sse/connect'
     token = gen_token(request=request, path=path)
     # test = requests.get(url=path, headers={"Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token)})
-    logging.warning(test)
     return token
 
 
@@ -161,11 +157,9 @@ def genTokenGet(request):
 @api.post('/token', auth=django_auth)
 def genToken(request):
     body = json.loads(request.body.decode())
-    logging.warning(body)
     path = body['path']
     method = body['method']
     token = gen_tokenV2(method=method, path=path)
-    logging.warning(token)
     return token
 
 def utcformat(dt, timespec='milliseconds'):
@@ -175,23 +169,19 @@ def utcformat(dt, timespec='milliseconds'):
 
 @api.post('/feedback', auth=django_auth)
 def feedback(request):
-    # try:
     now = utcformat(datetime.datetime.now(tz=datetime.timezone.utc))
-    logging.warning(datetime.datetime.now())
     body = json.loads(request.body.decode())
-    path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
+    path = f'{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses/feedback'
     method = "POST"
     user = get_object_or_404(User, username=request.auth)
     profile = Profile.get_polymorph_profile(user)
     if profile:
         body['profileId'] = str(profile.id)
-        body['externalUserId'] = user.id
+        body['externalUserId'] = str(user.id)
         body['createdAt'] = str(now)
-        logging.warning(body)
         token = gen_tokenV2(method=method, path=path, body=body)
-        response = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
-        logging.warning(response.status_code)
-        logging.warning(response.content)
+        response = requests.post(url=path, json=body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+        log.warning(f"Response: {response.status_code}, {response.content}")
         return {"status": response.status_code}
     else:
         return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
