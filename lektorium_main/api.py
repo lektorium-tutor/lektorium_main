@@ -114,8 +114,6 @@ def me(request):
         return 200, profile
     else:
         return 404, ""
-    # except:
-    #     return ""
 
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
