@@ -175,19 +175,23 @@ def utcformat(dt, timespec='milliseconds'):
 def feedback(request):
     # try:
     now = utcformat(datetime.datetime.now(tz=datetime.timezone.utc))
-    logging.warning(now)
+    logging.warning(datetime.datetime.now())
     body = json.loads(request.body.decode())
     path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/feedback'
     method = "POST"
     user = get_object_or_404(User, username=request.auth)
     profile = Profile.get_polymorph_profile(user)
+    logging.warning(dir(profile))
     if profile:
-        body['profileId'] = profile
+        body['profileId'] = str(profile.id)
         body['externalUserId'] = user.id
-        body['createdAt'] = now
+        body['createdAt'] = str(now)
         logging.warning(body)
         token = gen_tokenV2(method=method, path=path, body=body)
         response = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+        logging.warning(dir(response))
+        logging.warning(response.status_code)
+        logging.warning(response.content)
         return {"status": response.status_code}
     else:
         return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
