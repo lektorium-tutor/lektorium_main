@@ -14,6 +14,7 @@ from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
 import datetime
 from django.utils import timezone
+import time
 
 from lektorium_main.profile.models import Profile
 
@@ -30,7 +31,7 @@ log = logging.getLogger(__name__)
 
 def gen_token(request, path):
     timestamp = int(timezone.now().timestamp())
-
+    timestamp = int(time.time())
     if request.method == "POST" or request.method == "PUT":
         requestHash = hashlib.md5(request.body).hexdigest()
     else:
@@ -47,6 +48,7 @@ def gen_token(request, path):
 
 def gen_tokenV2(method, path, body=None):
     timestamp = int(timezone.now().timestamp())
+    timestamp = int(time.time())
     logging.warning(path)
     logging.warning(method)
     if method == "POST" or method == "PUT":
@@ -181,7 +183,6 @@ def feedback(request):
     method = "POST"
     user = get_object_or_404(User, username=request.auth)
     profile = Profile.get_polymorph_profile(user)
-    logging.warning(dir(profile))
     if profile:
         body['profileId'] = str(profile.id)
         body['externalUserId'] = user.id
@@ -189,7 +190,6 @@ def feedback(request):
         logging.warning(body)
         token = gen_tokenV2(method=method, path=path, body=body)
         response = requests.post(url=path, data=request.body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
-        logging.warning(dir(response))
         logging.warning(response.status_code)
         logging.warning(response.content)
         return {"status": response.status_code}
