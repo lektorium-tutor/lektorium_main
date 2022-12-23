@@ -9,12 +9,12 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from ninja import NinjaAPI, ModelSchema
+from ninja import NinjaAPI, ModelSchema, Schema
 from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
 import datetime
 from django.utils import timezone
-
+from typing import Optional
 from lektorium_main.profile.models import Profile
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def gen_token(request, path):
 
 def gen_tokenV2(method, path, body=None):
     timestamp = int(timezone.now().timestamp())
-    
+
     if method == "POST" or method == "PUT":
         requestHash = hashlib.md5(json.dumps(body).encode("utf-8")).hexdigest()
     else:
@@ -67,52 +67,37 @@ class UserSchema(ModelSchema):
         model = User
         model_fields = ['username', 'email', 'is_staff', 'is_active']
 
-
-# class EducationalInstitutionSchema(Schema):
-#     class Config:
-#         model = EducationalInstitution
-
 UserProfileSchema = create_schema(
     Profile,
     depth=2
-    # fields=[
-    #     'role',
-    #     'isActive',
-    #     'email'
-    # ],
 )
+# class educationalInstitutionIn(Schema):
+#     address: str= None
+#     fullName: str= None
+#     shortName: str= None
+#     schoolName: str= None
+#     locality: str= None
+#     municipalArea: str= None
 
+# class educationalInstitutionsIn(Schema):
+#     isActual: bool = None
+#     approvedStatus: str = None
+#     educationalInstitution: educationalInstitutionIn = None
 
-# class UserIn(Schema):
-#     username: str
-#     email: str
-#     # is_staff: srt = None
-#     # is_active: str = None
-#
-# class ProfileIn(Schema):
-#     role: str
-#     login: str
-#     middlename: str
-#     name: str
-#     fullname: str
-#     user: UserIn
-#
-# @api.post("/profiles", auth=django_auth)
-# def create_profile(request, payload: ProfileIn):
-#     profile = Profile.objects.create(**payload.dict())
-#     return {
-#         "id": profile.id,
-#         "success": True
-#     }
+# class ProfileSchema(Schema):
+#     fullName: str = None
+#     isActive: bool = None
+#     email: str = None
+#     statusConfirmEmail: str = None
+#     role: str = None
+#     educationalInstitutions: Optional[educationalInstitutionsIn]
 
-@api.get("/me", auth=django_auth, response={200: UserProfileSchema, 404: str})
+@api.get("/me", auth=django_auth, response=Optional[UserProfileSchema])
 def me(request):
     user = get_object_or_404(User, username=request.auth)
     profile = Profile.get_polymorph_profile(user)
     if profile:
-        return 200, profile
-    else:
-        return 404, ""
+        return profile
 
 
 @api.delete("/profiles/{profile_id}", auth=django_auth)
