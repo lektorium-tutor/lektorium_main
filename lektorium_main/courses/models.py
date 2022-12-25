@@ -23,7 +23,6 @@ from openedx.core.djangoapps.content.learning_sequences.api import get_course_ou
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.keys import CourseKey
 
 from lektorium_main.core.models import BaseModel
 
@@ -268,6 +267,7 @@ class COK(Course):
                     externalParent=self,
                     courseName=section_data.title,
                     externalId=section_data.usage_key.block_id,
+                    block_key=section_data.usage_key,
                     order=i
                 )
 
@@ -279,6 +279,7 @@ class COK(Course):
                             externalParent=section,
                             courseName=sequence_data.title,
                             externalId=sequence_data.usage_key.block_id,
+                            block_key=sequence_data.usage_key,
                             order=10 * i + k
                         )
 
@@ -294,6 +295,7 @@ class COK(Course):
                                     courseName=vertical.display_name,
                                     externalId=vertical.location.block_id,
                                     externalLink=f"{settings.LEARNING_BASE_URL}/{self.course_id}/{sequence_data.usage_key}/{vertical.location}",
+                                    block_key=vertical.location,
                                     order=100 * i + 10 * k + p
                                 )
 

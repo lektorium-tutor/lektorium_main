@@ -6,7 +6,7 @@ from lektorium_main.profile.models import (
     EducationalInstitutions,
     is_verification_educont_profile
 )
-from lektorium_main.statistics.models import LoggedIn
+from lektorium_main.statistics.models import EducontStatisticsItem
 
 STUDENT_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive',
                           'statusConfirmEmail', 'login', 'fullName', 'name',
@@ -61,9 +61,10 @@ def create(backend, user, response, *args, **kwargs):
                 defaults={**fields}, id=profile_id
             )
             profile.actualize_enrollments(allowedCourses)
-            LoggedIn.objects.create(
-                user=user,
-                profile_id=profile_id
+            EducontStatisticsItem.objects.create(
+                profileId=profile_id,
+                externalId="",
+                status=None
             )
         elif fields['role'] == 'TEACHER':
             profile, _ = TeacherProfile.objects.update_or_create(

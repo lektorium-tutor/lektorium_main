@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial, TagCategory
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
-from lektorium_main.statistics.models import LoggedIn, StudentStatisticsItem
+from lektorium_main.statistics.models import EducontStatisticsItem
 
 
 class LEKTAdminSite(admin.AdminSite):
@@ -167,18 +167,6 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
     tags_display.short_description = "Теги"
 
 
-@admin.register(LoggedIn, site=lekt_admin_site)
-class LoggedInAdmin(admin.ModelAdmin):
-    list_display = ('user', 'profile_id', 'created')
-    readonly_fields = ('user', 'profile_id', 'created', 'modified')
-
-
-@admin.register(StudentStatisticsItem, site=lekt_admin_site)
-class StudentStatisticsItemAdmin(admin.ModelAdmin):
-    list_display = ('user', 'profile_id', 'module_type', 'position', 'score', 'created')
-    fields = (
-        'user', 'student_module', 'module_type', 'position', 'score',
-        'block_id', 'block_type', 'course_key',
-        'created'
-    )
-    readonly_fields = ('created',)
+@admin.register(EducontStatisticsItem, site=lekt_admin_site)
+class EducontStatisticsItemAdmin(admin.ModelAdmin):
+    list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
