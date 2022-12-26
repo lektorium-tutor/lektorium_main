@@ -66,7 +66,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             try:
                 content = Course.objects.get(externalId=request.path.split('@')[-1])
             except Course.DoesNotExist:
-                logger.warning(f'EDUCONT course with externalId={request.path.split("@")[-1]} does not exist')
+                logger.warning(f'EDUCONT content with externalId={request.path.split("@")[-1]} does not exist')
             else:
                 self._write_stats(profile, content.externalId)
 
