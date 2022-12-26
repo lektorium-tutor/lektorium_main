@@ -48,7 +48,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             ).values_list('completion', flat=True))
             if completion == len(vertical.get_children()):
                 status = True
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion} {completion == len(vertical.get_children())}')
+            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion} {completion / len(vertical.get_children())}')
 
         EducontStatisticsItem.objects.create(
             statisticType='s',
