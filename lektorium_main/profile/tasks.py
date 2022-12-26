@@ -32,6 +32,7 @@ def listen_educont_sse(*args, **kwargs):
 
     r = requests.get(request_path, stream=True)
     for line in r.iter_lines():
+        logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r.url} -- {line}')
         if line:
             decoded_line = line.decode('utf-8')
             logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {json.loads(decoded_line)}')
