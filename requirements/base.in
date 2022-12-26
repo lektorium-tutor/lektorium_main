@@ -9,4 +9,4 @@ django-polymorphic
 social-auth-core
 sentry-sdk
 aiohttp-sse-client
-
+celery_pool_asyncio

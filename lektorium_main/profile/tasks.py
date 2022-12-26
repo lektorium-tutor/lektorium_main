@@ -9,13 +9,17 @@ from django.conf import settings
 from django.utils import timezone
 from aiohttp_sse_client import client as sse_client
 import asyncio
-
+from openedx.core.lib.celery import APP
+import celery_pool_asyncio
 # from celery.signals import worker_ready
 
 
 logger = logging.getLogger('lektorium_main.profile.tasks')
 
-async def async_task(*args, **kwargs):
+app=APP
+
+@app.task
+async def listen_educont_sse(*args, **kwargs):
     logger.warning(f'!!!!!!!!!!!!!! {args}; {kwargs}')
     request_path = f"{settings.EDUCONT_BASE_URL}/api/v1/public/sse/connect"
     request_hash = hashlib.md5(request_path.encode()).hexdigest()
@@ -31,21 +35,11 @@ async def async_task(*args, **kwargs):
         request_path,
         headers={"Authorization": f"Bearer {encoded_token}"}
     ) as event_source:
-        try:
-            async for event in event_source:
-                logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {event}')
-        except ConnectionError:
-            pass
-
-
-@shared_task(
-    name='listen_sse',
-    bind=True,
-    acks_late=False,
-)
-def listen_educont_sse(*args, **kwargs):
-    listener = async_task()
-    asyncio.run(listener)
+        # try:
+        async for event in event_source:
+            logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {event}')
+        # except ConnectionError:
+        #     pass
 
 
     # logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r}')
