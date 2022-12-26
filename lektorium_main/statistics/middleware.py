@@ -29,7 +29,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
 
     def _get_view_name(self, request):
         try:
-            logger.warning(f'View name:from completion.models import BlockCompletion {request.view_name}')
+            logger.warning(f'View name: {request.view_name}')
             return request.view_name
         except AttributeError:
             return None
@@ -68,9 +68,9 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             try:
                 content = Course.objects.get(externalId=request.path.split('@')[-1])
             except Course.DoesNotExist:
+                content = None
                 logger.warning(f'EDUCONT content with externalId={request.path.split("@")[-1]} does not exist')
-            else:
-
+            if content:
                 self._write_stats(profile, content.externalId)
 
         return response
