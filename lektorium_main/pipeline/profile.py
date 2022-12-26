@@ -64,6 +64,7 @@ def create(backend, user, response, *args, **kwargs):
             EducontStatisticsItem.objects.create(
                 profileId=profile_id,
                 externalId="",
+                statisticType="e",
                 status=None
             )
         elif fields['role'] == 'TEACHER':
