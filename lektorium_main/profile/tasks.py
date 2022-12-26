@@ -30,7 +30,7 @@ def listen_educont_sse(*args, **kwargs):
         "systemCode": settings.SYSTEM_CODE_EDUCONT
     }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
 
-    r = requests.get(request_path, stream=True)
+    r = requests.get(request_path, headers={"Authorization": f"Bearer {encoded_token}"}, stream=True)
     for line in r.iter_lines():
         logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r.url} -- {line}')
         if line:
