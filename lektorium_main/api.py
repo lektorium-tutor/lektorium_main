@@ -124,7 +124,7 @@ def test(request):
     return token
 
 
-@api.get('/token', auth=django_auth)
+@api.get('/token')  # , auth=django_auth # TODO: construct some auth or limit this by local connections
 def genTokenGet(request):
     path = request.GET['path']
     method = request.GET['method']
