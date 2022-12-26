@@ -22,7 +22,11 @@ class LektoriumMainConfig(AppConfig):
     def ready(self):
         if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
             self._enable_lek_main()
-    
+
+        from .profile.tasks import listen_educont_sse
+        listen_educont_sse.delay()
+        listen_educont_sse.apply_async()
+
     def _enable_lek_main(self):
         from lektorium_main import settings as auth_settings
         auth_settings.apply_settings(settings)
