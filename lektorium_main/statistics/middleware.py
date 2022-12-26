@@ -3,7 +3,7 @@ import logging
 from lektorium_main.courses.models import COK, Course
 from .models import EducontStatisticsItem
 from completion.models import BlockCompletion
-
+from xmodule.modulestore.django import modulestore
 try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
@@ -34,9 +34,16 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
         except AttributeError:
             return None
 
-    def _write_stats(self, profile, externalId):
-        content = Course.objects.get(externalId=externalId)
+    def _write_stats(self, profile, content):
         logger.warning(f'!!!!!!!!!!! BloclCompletion: {BlockCompletion.objects.filter(user=profile.user, block_key=content.block_key)}')
+        if content.courseTypeId ==3:
+            ms = modulestore()
+            vertical = ms.get_item(content.block_key, depth=2)
+            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {vertical}')
+            completion = BlockCompletion.objects.filter(user=profile.user, block_key__in=[child.location.block_id for child in vertical.get_children()]).values_list('completion', flat=True)
+            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion}')
+
+
         EducontStatisticsItem.objects.create(
             statisticType='s',
             externalId=content.externalId,
@@ -71,6 +78,6 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
                 content = None
                 logger.warning(f'EDUCONT content with externalId={request.path.split("@")[-1]} does not exist')
             if content:
-                self._write_stats(profile, content.externalId)
+                self._write_stats(profile, content)
 
         return response
