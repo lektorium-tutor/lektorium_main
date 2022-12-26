@@ -38,17 +38,15 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
 
     def _write_stats(self, profile, content):
         status = False
+        parent = None
         if content.courseTypeId == 3:
             ms = modulestore()
             vertical = ms.get_item(content.block_key, depth=2)
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {vertical}')
             completion = sum(BlockCompletion.objects.filter(
                 user=profile.user,
                 block_key__in=[child.location for child in vertical.get_children()]
             ).values_list('completion', flat=True))
-            if completion == len(vertical.get_children()):
-                status = True
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion} {completion / len(vertical.get_children())}')
+            status = (completion >= len(vertical.get_children()))
 
         EducontStatisticsItem.objects.create(
             statisticType='s',
@@ -56,10 +54,9 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             profileId=profile.profile_id,
             status=status if status else None
         )
-        try:
+        if hasattr(content, 'externalParent'):
             parent = content.externalParent
-        except:
-            parent = None
+
         if parent:
             self._write_stats(profile, parent)
 
