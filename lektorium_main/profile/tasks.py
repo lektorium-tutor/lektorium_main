@@ -18,6 +18,7 @@ logger = logging.getLogger('lektorium_main.profile.tasks')
 
 app=APP
 
+
 @app.task
 async def listen_educont_sse(*args, **kwargs):
     logger.warning(f'!!!!!!!!!!!!!! {args}; {kwargs}')
