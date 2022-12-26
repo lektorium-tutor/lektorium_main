@@ -75,10 +75,10 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
                 profileId=profile.profile_id,
 
             )
-        elif view_name in ('render_xblock', 'handle_xblock_callback'):
-            for d in dir(request):
-                if hasattr(request, d):
-                    logger.warning(f'REQUEST: {d}  -- {getattr(request, d)}')
+        elif view_name == 'render_xblock':
+            # for d in dir(request):
+            #     if hasattr(request, d):
+            #         logger.warning(f'REQUEST: {d}  -- {getattr(request, d)}')
             try:
                 content = Course.objects.get(externalId=request.path.split('@')[-1])
             except Course.DoesNotExist:
@@ -86,5 +86,15 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
                 logger.warning(f'EDUCONT content with externalId={request.path.split("@")[-1]} does not exist')
             if content:
                 self._write_stats(profile, content)
+        elif view_name ==  'handle_xblock_callback':
+            try:
+                content = Course.objects.get(externalId=request.HTTP_REFERER.split('@')[-1])
+            except Course.DoesNotExist:
+                content = None
+                logger.warning(f'EDUCONT content with externalId={request.HTTP_REFERER.split("@")[-1]} does not exist')
+            if content:
+                self._write_stats(profile, content)
 
         return response
+
+
