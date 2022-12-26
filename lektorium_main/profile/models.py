@@ -384,7 +384,7 @@ def is_verification_educont_profile(user):
         return False
 
     profile = Profile.get_polymorph_profile(user)
-    if profile.isActive and profile.is_approved and profile.is_actual and profile.is_empty_edu_inst:
+    if profile and profile.isActive and profile.is_approved and profile.is_actual and profile.is_empty_edu_inst:
         return False
     else:
         return True
@@ -395,19 +395,20 @@ is_verefication_educont_profile = is_verification_educont_profile  # For backwar
 
 def get_message_status_educont_profile(user):
     profile = Profile.get_polymorph_profile(user)
-    if not profile.isActive:
-        return StatusMessage.get_message(StatusMessage.StatusType.ACTIVE_STATUS)
-    elif not profile.is_actual:
-        return StatusMessage.get_message(StatusMessage.StatusType.ACTUAL_STATUS)
-    elif not profile.is_empty_edu_inst:
-        return StatusMessage.get_message(StatusMessage.StatusType.EMPTY_EDU_INST)
-    elif not profile.is_none_approved:
-        return StatusMessage.get_message(StatusMessage.StatusType.NONE_APPROVED_STATUS)
-    elif not profile.is_not_approved:
-        return StatusMessage.get_message(StatusMessage.StatusType.NOT_APPROVED_STATUS)
-    elif not profile.is_graduate_approved:
-        return StatusMessage.get_message(StatusMessage.StatusType.GRADUATE_APPROVED_STATUS)
-    elif not profile.is_approved:
-        return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
-    else:
-        return StatusMessage.empty_message
+    if profile:
+        if not profile.isActive:
+            return StatusMessage.get_message(StatusMessage.StatusType.ACTIVE_STATUS)
+        elif not profile.is_actual:
+            return StatusMessage.get_message(StatusMessage.StatusType.ACTUAL_STATUS)
+        elif not profile.is_empty_edu_inst:
+            return StatusMessage.get_message(StatusMessage.StatusType.EMPTY_EDU_INST)
+        elif not profile.is_none_approved:
+            return StatusMessage.get_message(StatusMessage.StatusType.NONE_APPROVED_STATUS)
+        elif not profile.is_not_approved:
+            return StatusMessage.get_message(StatusMessage.StatusType.NOT_APPROVED_STATUS)
+        elif not profile.is_graduate_approved:
+            return StatusMessage.get_message(StatusMessage.StatusType.GRADUATE_APPROVED_STATUS)
+        elif not profile.is_approved:
+            return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
+        else:
+            return StatusMessage.empty_message
