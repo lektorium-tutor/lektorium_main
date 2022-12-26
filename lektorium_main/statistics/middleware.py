@@ -77,7 +77,8 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             )
         elif view_name in ('render_xblock', 'handle_xblock_callback'):
             for d in dir(request):
-                logger.warning(f'REQUEST_PATH: {d}')
+                if hasattr(request, d):
+                    logger.warning(f'REQUEST: {d}  -- {getattr(request, d)}')
             try:
                 content = Course.objects.get(externalId=request.path.split('@')[-1])
             except Course.DoesNotExist:
