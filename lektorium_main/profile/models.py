@@ -57,7 +57,7 @@ class Profile(PolymorphicModel, BaseModel):
         user = get_user_model().objects.get(pk=self.user.id)
         if not self.is_approved:
             for e in CourseEnrollment.enrollments_for_user(user=user):
-                e.unenroll(user, CourseKey.from_string(e.course_id))
+                e.unenroll(user, e.course_id)
             return None
 
         if self.role == 'STUDENT':
