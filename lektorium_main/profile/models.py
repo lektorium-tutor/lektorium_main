@@ -63,9 +63,8 @@ class Profile(PolymorphicModel, BaseModel):
         if self.role == 'STUDENT':
             courses_to_be_enrolled_in = COK.objects.filter(externalId__in=ids).values_list('course_id', flat=True)
             all_enrollments = CourseEnrollment.enrollments_for_user(user=user)
-            logger.warning(f'!!!!!!!!!!!!! {courses_to_be_enrolled_in}')
+            logger.warning(f'!!!!!!!!!!!!! {courses_to_be_enrolled_in}, {ids}')
             logger.warning(f'!!!!!!!!!!!!! {all_enrollments}')
-            logger.warning(f'!!!!!!!!!!!!! {ids}')
             if all_enrollments.count() > 0:
                 for enrollment in all_enrollments:
                     if str(enrollment.course.id) not in courses_to_be_enrolled_in:
@@ -81,20 +80,14 @@ class Profile(PolymorphicModel, BaseModel):
 
     @property
     def is_empty_edu_insts(self):
-        if self.educationalInstitutions:
-            return True
-        else:
-            return False
+        return True if self.educationalInstitutions else False
 
     @property
     def is_empty_edu_inst(self):
         if self.is_empty_edu_insts:
             if self.educationalInstitutions.educationalInstitution:
                 return True
-            else:
-                return False
-        else:
-            return False
+        return False
 
     @property
     def is_actual(self):

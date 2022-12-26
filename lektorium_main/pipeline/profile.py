@@ -8,6 +8,9 @@ from lektorium_main.profile.models import (
 )
 from lektorium_main.statistics.models import EducontStatisticsItem
 
+logger = logging.getLogger('lektorium_main.pipeline.profile')
+
+
 STUDENT_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive',
                           'statusConfirmEmail', 'login', 'fullName', 'name',
                           'surname', 'middleName', 'email']
@@ -20,15 +23,21 @@ TEACHER_PROFILE_FIELDS = ['id', 'user', 'role', 'isActive',
 def create(backend, user, response, *args, **kwargs):
     if backend.name == 'educont':
         fields = None
-        logging.warning("Educont profile create or update")
-        logging.warning(response)
-        logging.warning(dir(response))
+        logger.warning("Educont profile create or update")
+        logger.warning(response)
+        logger.warning(dir(response))
         role = response.get('role')
         profile_id = response.get('id')
         educationalInstitutions = response.get('educationalInstitutions', [])
         allowedCourses = response.get('allowedCourses', [])
+        logger.warning(f'allowedCourses: {response.get("allowedCourses")}')
+
+        for d in dir(response):
+            logger.warning(f'{getattr(response, d)}')
+
+        logger.warning()
         if role is None:
-            logging.warning("Educont profile role is None")
+            logger.warning("Educont profile role is None")
             return
 
         if role == 'STUDENT':
