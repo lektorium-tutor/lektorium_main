@@ -171,7 +171,6 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
 class EducontStatisticsItemAdmin(admin.ModelAdmin):
     list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
 
-admin.site.unregister(BlockCompletion)
 @admin.register(BlockCompletion, site=lekt_admin_site)
 class BlockCompletionAdmin(admin.ModelAdmin):
     list_display = ('user', 'block_key')
