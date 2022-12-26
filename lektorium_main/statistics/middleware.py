@@ -40,7 +40,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             ms = modulestore()
             vertical = ms.get_item(content.block_key, depth=2)
             logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {vertical}')
-            completion = BlockCompletion.objects.filter(user=profile.user, block_key__in=[child.location.block_id for child in vertical.get_children()]).values_list('completion', flat=True)
+            completion = BlockCompletion.objects.filter(user=profile.user, block_key__in=[child.location for child in vertical.get_children()]).values_list('completion', flat=True)
             logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion}')
 
 
