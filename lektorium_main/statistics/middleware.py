@@ -20,7 +20,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
         if request.user:
             user = request.user
             if user.is_active and hasattr(user, 'verified_profile_educont'):
-                logger.warning(f'User: {user}, profile: {user.verified_profile_educont}')
+                logger.debug(f'User: {user}, profile: {user.verified_profile_educont}')
                 return user.verified_profile_educont
         return None
         # try:
@@ -31,7 +31,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
 
     def _get_view_name(self, request):
         try:
-            logger.warning(f'View name: {request.view_name}')
+            logger.debug(f'View name: {request.view_name}')
             return request.view_name
         except AttributeError:
             return None
