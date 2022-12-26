@@ -63,7 +63,11 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
 
             )
         elif view_name == 'render_xblock':
-            content = Course.objects.get(externalId=request.path.split('@')[-1])
-            self._write_stats(profile, content.externalId)
+            try:
+                content = Course.objects.get(externalId=request.path.split('@')[-1])
+            except Course.DoesNotExist:
+                logger.warning(f'EDUCONT course with externalId={request.path.split("@")[-1]} does not exist')
+            else:
+                self._write_stats(profile, content.externalId)
 
         return response
