@@ -9,7 +9,9 @@ from polymorphic.models import PolymorphicModel
 from opaque_keys.edx.keys import CourseKey
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import COK
+import logging
 
+logger = logging.getLogger('lektorium_main.profiles.models')
 
 class Profile(PolymorphicModel, BaseModel):
     class StatusConfirmEmail(models.TextChoices):
@@ -61,6 +63,9 @@ class Profile(PolymorphicModel, BaseModel):
         if self.role == 'STUDENT':
             courses_to_be_enrolled_in = COK.objects.filter(externalId__in=ids).values_list('course_id', flat=True)
             all_enrollments = CourseEnrollment.enrollments_for_user(user=user)
+            logger.warning(f'!!!!!!!!!!!!! {courses_to_be_enrolled_in}')
+            logger.warning(f'!!!!!!!!!!!!! {all_enrollments}')
+            logger.warning(f'!!!!!!!!!!!!! {ids}')
             if all_enrollments.count() > 0:
                 for enrollment in all_enrollments:
                     if str(enrollment.course.id) not in courses_to_be_enrolled_in:
