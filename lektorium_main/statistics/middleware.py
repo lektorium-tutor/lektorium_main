@@ -16,7 +16,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
     def _get_profile(self, request):
         if request.user:
             user = request.user
-            if user.is_active and user.verified_profile_educont.exist():
+            if user.is_active and hasattr(user, 'verified_profile_educont'):
                 logger.warning(f'User: {user}, profile: {user.verified_profile_educont.first()}')
                 return user.verified_profile_educont.first()
         return None
