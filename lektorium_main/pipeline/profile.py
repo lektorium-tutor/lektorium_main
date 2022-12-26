@@ -32,10 +32,6 @@ def create(backend, user, response, *args, **kwargs):
         allowedCourses = response.get('allowedCourses', [])
         logger.warning(f'allowedCourses: {response.get("allowedCourses")}')
 
-        for d in dir(response):
-            logger.warning(f'{getattr(response, d)}')
-
-        logger.warning()
         if role is None:
             logger.warning("Educont profile role is None")
             return
