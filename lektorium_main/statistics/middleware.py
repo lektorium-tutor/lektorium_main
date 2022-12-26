@@ -88,11 +88,11 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
                 self._write_stats(profile, content)
         elif view_name == 'handle_xblock_callback':
             try:
-                content = Course.objects.get(externalId=request.META['HTTP_REFERER'].split('@')[-1])
+                content = Course.objects.get(externalId=request.META['HTTP_REFERER'].split('@')[-1].split('?')[0])
             except Course.DoesNotExist:
                 content = None
                 logger.warning(
-                    f'EDUCONT content with externalId={request.META["HTTP_REFERER"].split("@")[-1]} does not exist')
+                    f'EDUCONT content with externalId={request.META["HTTP_REFERER"].split("@")[-1].split("?")[0]} does not exist')
             if content:
                 self._write_stats(profile, content)
 
