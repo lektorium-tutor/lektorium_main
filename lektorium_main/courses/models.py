@@ -162,7 +162,7 @@ class TeachingMaterial(Course):
                                        on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
 
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag,blank=True)
 
     class Meta:
         verbose_name = 'материал'
@@ -200,7 +200,7 @@ class COK(Course):
         max_length=(9 + 7 * 2),  # 1..16,
         blank=True
     )
-    tags = models.ManyToManyField(Tag, verbose_name='Теги')
+    tags = models.ManyToManyField(Tag, verbose_name='Теги', blank=True)
 
     class Meta:
         verbose_name = 'курс ЦОК'
