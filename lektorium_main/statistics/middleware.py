@@ -14,12 +14,17 @@ logger = logging.getLogger(__file__)
 class EducontStatisticsMiddleware(MiddlewareMixin):
 
     def _get_profile(self, request):
-        try:
-            logger.warning(f'User: {request.user}, profile: {request.user.verified_profile_educont.first()}')
-            if request.user.is_active:
-                return request.user.verified_profile_educont.first()
-        except AttributeError:
-            return None
+        if request.user:
+            user = request.user
+            if user.is_active and user.verified_profile_educont.exist():
+                logger.warning(f'User: {user}, profile: {user.verified_profile_educont.first()}')
+                return user.verified_profile_educont.first()
+        return None
+        # try:
+        #     if request.user.is_active:
+        #         return request.user.verified_profile_educont.first()
+        # except AttributeError:
+        #     return None
 
     def _get_view_name(self, request):
         try:
