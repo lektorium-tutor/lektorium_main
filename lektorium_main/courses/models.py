@@ -51,6 +51,7 @@ class Tag(BaseModel):
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
     category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
 
+
     def __str__(self):
         return self.name
 
