@@ -6,7 +6,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
 from polymorphic.models import PolymorphicModel
-
+from opaque_keys.edx.keys import CourseKey
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import COK
 
@@ -55,7 +55,7 @@ class Profile(PolymorphicModel, BaseModel):
         user = get_user_model().objects.get(pk=self.user.id)
         if not user.is_active:
             for e in CourseEnrollment.enrollments_for_user(user=user):
-                e.unenroll(user, e.course_id)
+                e.unenroll(user, CourseKey.from_string(e.course_id))
             return None
 
         if self.role == 'STUDENT':
@@ -63,12 +63,12 @@ class Profile(PolymorphicModel, BaseModel):
             all_enrollments = CourseEnrollment.enrollments_for_user(user=user)
             if all_enrollments.count() > 0:
                 for enrollment in all_enrollments:
-                    if enrollment.course.id not in courses_to_be_enrolled_in:
+                    if str(enrollment.course.id) not in courses_to_be_enrolled_in:
                         enrollment.unenroll(user, enrollment.course.id)
 
             if len(courses_to_be_enrolled_in) > 0:
                 for course_id in courses_to_be_enrolled_in:
-                    CourseEnrollment.enroll(user, course_id)
+                    CourseEnrollment.enroll(user, CourseKey.from_string(course_id))
 
         return COK.objects.filter(
             course_id__in=CourseEnrollment.enrollments_for_user(user=user).values_list(
