@@ -1,11 +1,12 @@
 # TODO: create admin and check models viability
 import json
 
+from completion.models import BlockCompletion
 from django.contrib import admin
 from django.contrib import messages
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-from completion.models import BlockCompletion
+
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial, TagCategory
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
@@ -54,9 +55,9 @@ class TagCategoryAdmin(admin.ModelAdmin):
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag_id', 'name',)
     search_fields = ('name', 'category__name')
-    # filter_vertical = ('category',)
+    list_filter = ('category',)
 
-    # autocomplete_fields = ["parent", ]
+    autocomplete_fields = ["category", ]
 
 
 @admin.action(description='POST course')
@@ -170,6 +171,7 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
 @admin.register(EducontStatisticsItem, site=lekt_admin_site)
 class EducontStatisticsItemAdmin(admin.ModelAdmin):
     list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
+
 
 @admin.register(BlockCompletion, site=lekt_admin_site)
 class BlockCompletionAdmin(admin.ModelAdmin):

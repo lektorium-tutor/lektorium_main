@@ -55,7 +55,7 @@ class Profile(PolymorphicModel, BaseModel):
 
     def actualize_enrollments(self, ids: list):
         user = get_user_model().objects.get(pk=self.user.id)
-        if not user.is_active:
+        if not self.is_approved:
             for e in CourseEnrollment.enrollments_for_user(user=user):
                 e.unenroll(user, CourseKey.from_string(e.course_id))
             return None
