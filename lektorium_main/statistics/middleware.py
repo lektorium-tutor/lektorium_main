@@ -38,7 +38,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
         EducontStatisticsItem.objects.create(
             statisticType='s',
             externalId=content.externalId,
-            profileId=profile.id,
+            profileId=profile.profile_id,
         )
         try:
             parent = content.externalParent
@@ -59,7 +59,7 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             EducontStatisticsItem.objects.create(
                 statisticType='s',
                 externalId=course.externalId,
-                profileId=profile.id,
+                profileId=profile.profile_id,
 
             )
         elif view_name == 'render_xblock':
