@@ -21,7 +21,7 @@ logger = logging.getLogger('lektorium_main.profile.tasks')
 )
 def listen_educont_sse(*args, **kwargs):
     logger.warning(f'!!!!!!!!!!!!!! {args}; {kwargs}')
-    request_path = f"{settings.EDUCONT_BASE_URL}/sse/connect"
+    request_path = f"{settings.EDUCONT_BASE_URL}/api/v1/public/sse/connect"
     request_hash = hashlib.md5(request_path.encode()).hexdigest()
     encoded_token = jwt.encode({
         "systemName": "Лекториум",
