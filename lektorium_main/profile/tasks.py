@@ -7,6 +7,8 @@ import requests
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
+from aiohttp_sse_client import client as sse_client
+
 
 # from celery.signals import worker_ready
 
@@ -30,12 +32,23 @@ def listen_educont_sse(*args, **kwargs):
         "systemCode": settings.SYSTEM_CODE_EDUCONT
     }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
 
-    r = requests.get(request_path, headers={"Authorization": f"Bearer {encoded_token}"}, stream=True)
-    for line in r.iter_lines():
-        logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r.url} -- {line}')
-        if line:
-            decoded_line = line.decode('utf-8')
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {json.loads(decoded_line)}')
+    # r = requests.get(request_path, headers={"Authorization": f"Bearer {encoded_token}"}, stream=True)
+    async with sse_client.EventSource(
+        request_path,
+        headers={"Authorization": f"Bearer {encoded_token}"}
+    ) as event_source:
+        try:
+            async for event in event_source:
+                logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {event}')
+        except ConnectionError:
+            pass
+
+    # logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r}')
+    # for line in r.iter_lines():
+    #     logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r.url} -- {line}')
+    #     if line:
+    #         decoded_line = line.decode('utf-8')
+    #         logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {json.loads(decoded_line)}')
 
 # @worker_ready.connect
 # def at_start(sender, **k):
