@@ -37,19 +37,24 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             return None
 
     def _write_stats(self, profile, content):
+        status = False
         if content.courseTypeId == 3:
             ms = modulestore()
             vertical = ms.get_item(content.block_key, depth=2)
             logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {vertical}')
-            completion = BlockCompletion.objects.filter(user=profile.user, block_key__in=[child.location for child in
-                                                                                          vertical.get_children()]).values_list(
-                'completion', flat=True)
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion}')
+            completion = sum(BlockCompletion.objects.filter(
+                user=profile.user,
+                block_key__in=[child.location for child in vertical.get_children()]
+            ).values_list('completion', flat=True))
+            if completion == len(vertical.get_children()):
+                status = True
+            logger.warning(f'!!!!!!!!!!!!!!!!!!!!! {completion} {completion == len(vertical.get_children())}')
 
         EducontStatisticsItem.objects.create(
             statisticType='s',
             externalId=content.externalId,
             profileId=profile.profile_id,
+            status=status if status else None
         )
         try:
             parent = content.externalParent
