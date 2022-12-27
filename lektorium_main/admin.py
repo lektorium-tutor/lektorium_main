@@ -45,12 +45,6 @@ class StatusMessageAdmin(admin.ModelAdmin):
     list_display = ('status_type', 'message',)
 
 
-@admin.register(TagCategory, site=lekt_admin_site)
-class TagCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
-
-
 @admin.register(Tag, site=lekt_admin_site)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
