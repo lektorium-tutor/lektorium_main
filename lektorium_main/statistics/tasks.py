@@ -19,9 +19,9 @@ logger = logging.getLogger('lektorium_main.profile.tasks')
     bind=True,
     acks_late=False,
 )
-def listen_educont_sse(*args, **kwargs):
+def send_stats_educont(*args, **kwargs):
     logger.warning(f'!!!!!!!!!!!!!! {args}; {kwargs}')
-    request_path = f"{settings.EDUCONT_BASE_URL}/api/v1/public/sse/connect"
+    request_path = f"{settings.EDUCONT_BASE_URL}/statistics"
     request_hash = hashlib.md5(request_path.encode()).hexdigest()
     encoded_token = jwt.encode({
         "systemName": "Лекториум",
@@ -30,14 +30,5 @@ def listen_educont_sse(*args, **kwargs):
         "systemCode": settings.SYSTEM_CODE_EDUCONT
     }, settings.PRIVATE_KEY_EDUCONT, algorithm="RS256")
 
-    r = requests.get(request_path, headers={"Authorization": f"Bearer {encoded_token}"}, stream=True)
-    for line in r.iter_lines():
-        logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {r.url} -- {line}')
-        if line:
-            decoded_line = line.decode('utf-8')
-            logger.warning(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!! {json.loads(decoded_line)}')
+    r = requests.post(request_path, headers={"Authorization": f"Bearer {encoded_token}"}, stream=True)
 
-# @worker_ready.connect
-# def at_start(sender, **k):
-#     with sender.app.connection() as conn:
-#          sender.app.send_task('listen_sse')

@@ -215,7 +215,7 @@ class EducationalInstitution(BaseModel):
         verbose_name_plural = 'данные об образовательных учреждениях'
 
     def __str__(self):
-        return str(self.pk)
+        return self.schoolNameCustom
 
     # def __str__(self):
     #     return f'{self.get_typeEducationalInstitution_display()} {self.schoolNameCustom}'
@@ -245,7 +245,7 @@ class EducationalInstitutions(BaseModel):
         pass
 
     def __str__(self):
-        return str(self.pk)
+        return f"{self.approvedStatus} - {self.educationalInstitution}"
 
     def get_absolute_url(self):
         return reverse("lektorium_main_EducationalInstitutions_detail", args=(self.pk,))
