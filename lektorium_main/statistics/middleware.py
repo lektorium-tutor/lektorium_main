@@ -102,3 +102,4 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
                 self._write_stats(profile, content)
 
         return response
+
