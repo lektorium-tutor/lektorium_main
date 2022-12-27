@@ -29,27 +29,15 @@ from lektorium_main.core.models import BaseModel
 log = logging.getLogger(__name__)
 
 
-class TagCategory(BaseModel):
-    name = models.CharField("Наименование категории", max_length=255)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'категория тегов'
-        verbose_name_plural = 'категории тегов'
-
-
 class Tag(BaseModel):
     """
     id: string (uuid) "id тега"
     name: string "Наименование тега"
     parentId: string (uuid) "id родительского тэга" null=True
     """
-    tag_id = models.CharField(max_length=255, default=uuid.uuid4, unique=True)
+    id = models.CharField(max_length=36, default=uuid.uuid4, unique=True, primary_key=True)
     name = models.CharField("Наименование тега", max_length=255)
     parent = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE)
-    category = models.ForeignKey(TagCategory, blank=True, null=True, on_delete=models.CASCADE)
 
 
     def __str__(self):

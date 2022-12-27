@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
-from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial, TagCategory
+from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
 from lektorium_main.statistics.models import EducontStatisticsItem
@@ -45,19 +45,15 @@ class StatusMessageAdmin(admin.ModelAdmin):
     list_display = ('status_type', 'message',)
 
 
-@admin.register(TagCategory, site=lekt_admin_site)
-class TagCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
 
 
 @admin.register(Tag, site=lekt_admin_site)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('tag_id', 'name',)
-    search_fields = ('name', 'category__name')
-    list_filter = ('category',)
+    list_display = ('id', 'name',)
+    search_fields = ('name', 'parent__name')
+    list_filter = ('parent',)
 
-    autocomplete_fields = ["category", ]
+    autocomplete_fields = ["parent", ]
 
 
 @admin.action(description='POST course')
