@@ -230,8 +230,8 @@ class COK(Course):
         }
 
     def get_course_outline_data(self):
-        course_key = CourseKey.from_string(self.course_id)
         try:
+            course_key = CourseKey.from_string(self.course_id)
             outline_data = get_course_outline(course_key)
         except (ValueError, CourseOutlineData.DoesNotExist):
             return None
@@ -248,11 +248,14 @@ class COK(Course):
                 return value.isoformat()
             return value
 
-        return attr.asdict(
-            self.get_course_outline_data(),
-            recurse=True,
-            value_serializer=json_serializer,
-        )
+        try:
+            return attr.asdict(
+                self.get_course_outline_data(),
+                recurse=True,
+                value_serializer=json_serializer,
+            )
+        except:
+            return {}
 
     def create_educont_objects(self):  # TODO: maybe get from modulestore
         outline_data = self.get_course_outline_data()
