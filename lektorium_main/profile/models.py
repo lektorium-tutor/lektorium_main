@@ -342,7 +342,7 @@ class Grade(BaseModel):
 
 
 class StatusMessage(BaseModel):
-    empty_message = 'Ошибка: пустое сообщение, обратитесь к Администратору образовательной платформы.'
+    empty_message = 'Ошибка: у вас нет аккаунта Educont или обратитесь к Администратору образовательной платформы.'
 
     class StatusType(models.TextChoices):
         ACTIVE_STATUS = 'ACTIVE_STATUS',
@@ -405,3 +405,5 @@ def get_message_status_educont_profile(user):
             return StatusMessage.get_message(StatusMessage.StatusType.APPROVED_STATUS)
         else:
             return StatusMessage.empty_message
+    else:
+        return StatusMessage.empty_message
