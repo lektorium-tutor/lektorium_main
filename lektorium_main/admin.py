@@ -54,10 +54,10 @@ class TagCategoryAdmin(admin.ModelAdmin):
 @admin.register(Tag, site=lekt_admin_site)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag_id', 'name',)
-    search_fields = ('name', 'category__name')
+    search_fields = ('name', 'category__name', 'parent__id')
     list_filter = ('category',)
 
-    autocomplete_fields = ["category", ]
+    autocomplete_fields = ["category", "parent"]
 
 
 @admin.action(description='POST course')
