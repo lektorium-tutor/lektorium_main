@@ -22,12 +22,12 @@ lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 
 @admin.register(StudentProfile, site=lekt_admin_site)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
 
 
 @admin.register(TeacherProfile, site=lekt_admin_site)
 class TeacherProfileAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
 
 
 @admin.register(EducationalInstitution, site=lekt_admin_site)
