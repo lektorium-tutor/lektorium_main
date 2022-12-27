@@ -163,7 +163,7 @@ class TeachingMaterial(Course):
             'courseTypeId': self.courseTypeId,
             'externalParentId': self.externalParent.externalId,
             'courseName': self.courseName,
-            'tags': [{'id': tag.tag_id} for tag in self.tags.all()],
+            'tags': [{'id': tag.id} for tag in self.tags.all()],
         }
 
 
@@ -214,7 +214,7 @@ class COK(Course):
             'grades': [grade for grade in self.grades],
             'courseName': self.courseName,
             'courseDescription': self.courseDescription,
-            'tags': [{'id': tag.tag_id} for tag in self.tags.all()],
+            'tags': [{'id': tag.id} for tag in self.tags.all()],
         }
 
     def get_course_outline_data(self):
