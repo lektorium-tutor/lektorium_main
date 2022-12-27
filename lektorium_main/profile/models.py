@@ -195,7 +195,7 @@ class EducationalInstitution(BaseModel):
     address = models.TextField('Полный адрес образовательной организации')
     locality = models.CharField('Город образовательной организации', max_length=100)
     region = models.CharField('Регион образовательной организации', max_length=100)
-    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50)
+    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50, blank=True, null=True)
     isTest = models.BooleanField('Флаг "Тестовое учрждение"',
                                  help_text='Если значение "true", то для пользователя, который привязан к этому \
                                  учреждению не будет учитываться статистика',
