@@ -131,9 +131,12 @@ class COKAdmin(admin.ModelAdmin):
     )
 
     def raw_course_outline_data(self, _obj):
-        outline_data_dict = _obj.get_course_outline_data_dict()
-        outline_data_json = json.dumps(outline_data_dict, indent=2, sort_keys=True)
-        return format_html("<pre>\n{}\n</pre>", outline_data_json)
+        try:
+            outline_data_dict = _obj.get_course_outline_data_dict()
+            outline_data_json = json.dumps(outline_data_dict, indent=2, sort_keys=True)
+            return format_html("<pre>\n{}\n</pre>", outline_data_json)
+        except:
+            return format_html("<pre>\nNone\n</pre>")
 
 
 @admin.register(Section, site=lekt_admin_site)
