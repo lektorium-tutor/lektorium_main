@@ -1,17 +1,19 @@
+import logging
 import uuid
-
+from common.djangoapps.student.roles import CourseDataResearcherRole, UserBasedRole
 from common.djangoapps.student.models import CourseEnrollment
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
-from polymorphic.models import PolymorphicModel
 from opaque_keys.edx.keys import CourseKey
+from polymorphic.models import PolymorphicModel
+
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import COK
-import logging
 
 logger = logging.getLogger('lektorium_main.profiles.models')
+
 
 class Profile(PolymorphicModel, BaseModel):
     class StatusConfirmEmail(models.TextChoices):
@@ -23,12 +25,6 @@ class Profile(PolymorphicModel, BaseModel):
     class Role(models.TextChoices):
         TEACHER = 'TEACHER',
         STUDENT = 'STUDENT',
-
-    # Relationships
-    educationalInstitutions = models.ForeignKey("lektorium_main.EducationalInstitutions",
-                                                verbose_name='Данные об образовательных учреждениях пользователя',
-                                                on_delete=models.SET_NULL,
-                                                null=True, blank=True)
 
     # Fields
     role = models.CharField('Роль пользователя в Системе', max_length=15, choices=Role.choices)
@@ -47,11 +43,16 @@ class Profile(PolymorphicModel, BaseModel):
     birthyear = models.CharField(max_length=50, null=True, blank=True)
 
     user = models.OneToOneField(get_user_model(), unique=True, db_index=True, related_name='verified_profile_educont',
-                             verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
+                                verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
     profile_id = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:
         pass
+
+    def get_courses_enrolled(self):
+        return COK.objects.filter(
+            course_id__in=CourseEnrollment.enrollments_for_user(user=self.user).values_list(
+                'course', flat=True))
 
     def actualize_enrollments(self, ids: list):
         user = get_user_model().objects.get(pk=self.user.id)
@@ -59,6 +60,7 @@ class Profile(PolymorphicModel, BaseModel):
             for e in CourseEnrollment.enrollments_for_user(user=user):
                 e.unenroll(user, e.course_id)
             return None
+            # TODO: забрать права у учителя
 
         if self.role == 'STUDENT':
             courses_to_be_enrolled_in = COK.objects.filter(externalId__in=ids).values_list('course_id', flat=True)
@@ -129,7 +131,7 @@ class Profile(PolymorphicModel, BaseModel):
     @property
     def is_none_approved(self):
         if self.is_empty_edu_insts:
-            if self.educationalInstitutions.approvedStatus == None or self.educationalInstitutions.approvedStatus == '':
+            if not self.educationalInstitutions.approvedStatus or self.educationalInstitutions.approvedStatus == '':
                 return True
             else:
                 return False
@@ -195,7 +197,8 @@ class EducationalInstitution(BaseModel):
     address = models.TextField('Полный адрес образовательной организации')
     locality = models.CharField('Город образовательной организации', max_length=100)
     region = models.CharField('Регион образовательной организации', max_length=100)
-    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50, blank=True, null=True)
+    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50, blank=True,
+                                     null=True)
     isTest = models.BooleanField('Флаг "Тестовое учрждение"',
                                  help_text='Если значение "true", то для пользователя, который привязан к этому \
                                  учреждению не будет учитываться статистика',
@@ -232,8 +235,10 @@ class EducationalInstitution(BaseModel):
         return profile
 
 
-class EducationalInstitutions(BaseModel):
+class ProfileEducationalInstitution(BaseModel):
     # Relationships
+    profile = models.ForeignKey("lektorium_main.Profile", related_name='educationalInstitutions',
+                                on_delete=models.CASCADE)
     educationalInstitution = models.ForeignKey("lektorium_main.EducationalInstitution", on_delete=models.CASCADE,
                                                blank=True, null=True)
 
@@ -242,7 +247,9 @@ class EducationalInstitutions(BaseModel):
     isActual = models.BooleanField(null=True)
 
     class Meta:
-        pass
+        verbose_name = 'данные об образовательных учреждениях пользователя'
+        verbose_name_plural = 'данные об образовательных учреждениях пользователя'
+        unique_together = ('profile', 'educationalInstitution')
 
     def __str__(self):
         return f"{self.approvedStatus} - {self.educationalInstitution}"
@@ -255,8 +262,8 @@ class EducationalInstitutions(BaseModel):
 
 
 class StudentProfile(Profile):
-    studentGradeEducationalInstitutions = models.ForeignKey("lektorium_main.StudentTagEducationalInstitutions",
-                                                            on_delete=models.CASCADE, blank=True, null=True)
+    studentGradeEducationalInstitutions = models.ManyToManyField("lektorium_main.StudentTagEducationalInstitution",
+                                                                 on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Профиль студента'
@@ -273,15 +280,47 @@ class StudentProfile(Profile):
 
 
 class TeacherProfile(Profile):
-    teacherTagEducationalInstitutions = models.ForeignKey("lektorium_main.TeacherTagEducationalInstitutions",
-                                                          on_delete=models.CASCADE, blank=True, null=True)
-
     class Meta:
         verbose_name = 'Профиль преподавателя'
         verbose_name_plural = 'Профили преподавателей'
 
     def __str__(self):
-        return str(self.pk)
+        return f'{self.fullName} - {self.role}'
+
+    def get_students(self):
+        teacher_tag_educational_institutions = self.teacherTagEducationalInstitutions.all()
+        student_profiles = StudentTagEducationalInstitution.objects.filter(
+            gradeEducationalInstitutions__in=teacher_tag_educational_institutions.values_list(
+                'gradeEducationalInstitutions', flat=True),
+            tagId__in=teacher_tag_educational_institutions.values_list('tagId', flat=True)
+        ).values_list('profile', flat=True)
+        return student_profiles
+
+    def get_courses_must_have_teacher_access(self):
+        courses = list()
+        for student in self.get_students():
+            for course in student.get_courses_enrolled():
+                courses.append(course)
+
+        return courses
+
+    def courses_with_teacher_assess(self):
+        data_researcher_courses = UserBasedRole(self.user, CourseDataResearcherRole.ROLE).courses_with_role()
+        COK.objects.filter(
+            course_id__in=data_researcher_courses.values_list(
+                'course', flat=True))
+        return data_researcher_courses
+
+
+    def grant_teacher_access(self):
+        courses_must_have_teacher_access = self.get_courses_must_have_teacher_access()
+        courses_with_teacher_assess = self.courses_with_teacher_assess()
+        UserBasedRole(self.user, CourseDataResearcherRole.ROLE).remove_courses(*[CourseKey.from_string(course.course_id) for course in courses_with_teacher_assess])
+        for course in courses_must_have_teacher_access:
+            UserBasedRole(self.user, CourseDataResearcherRole.ROLE).add_course(CourseKey.from_string(course.course_id))
+        return True
+
+
 
     def get_absolute_url(self):
         return reverse("lektorium_main_TeacherProfile_detail", args=(self.pk,))
@@ -290,9 +329,11 @@ class TeacherProfile(Profile):
         return reverse("lektorium_main_TeacherProfile_update", args=(self.pk,))
 
 
-class TeacherTagEducationalInstitutions(BaseModel):
+class TeacherTagEducationalInstitution(BaseModel):
+    profile = models.ForeignKey("lektorium_main.TeacherProfile", related_name='teacherTagEducationalInstitutions',
+                                on_delete=models.CASCADE)
     tagId = models.CharField(max_length=100, blank=True, null=True)
-    gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitutions",
+    gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitution",
                                                      on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
@@ -302,9 +343,11 @@ class TeacherTagEducationalInstitutions(BaseModel):
         return str(self.pk)
 
 
-class StudentTagEducationalInstitutions(BaseModel):
+class StudentTagEducationalInstitution(BaseModel):
+    profile = models.ForeignKey("lektorium_main.StudentProfile", related_name='studentTagEducationalInstitutions',
+                                on_delete=models.CASCADE)
     tagId = models.CharField(max_length=100, blank=True, null=True)
-    gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitutions",
+    gradeEducationalInstitutions = models.ForeignKey("lektorium_main.GradeEducationalInstitution",
                                                      on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
@@ -314,7 +357,7 @@ class StudentTagEducationalInstitutions(BaseModel):
         return str(self.pk)
 
 
-class GradeEducationalInstitutions(BaseModel):
+class GradeEducationalInstitution(BaseModel):
     educationalInstitutionId = models.UUIDField(editable=False, unique=True)
     letter = models.CharField(max_length=10, blank=True, null=True)
     grade = models.ForeignKey("lektorium_main.Grade", on_delete=models.CASCADE, blank=True, null=True)
