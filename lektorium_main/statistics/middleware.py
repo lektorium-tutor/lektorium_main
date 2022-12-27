@@ -68,13 +68,18 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
 
         view_name = self._get_view_name(request)
         if view_name == 'CourseHomeMetadataView':  # TODO: move to _write_stats
-            course = COK.objects.get(course_id=request.path.split('/')[-1])
-            EducontStatisticsItem.objects.create(
-                statisticType='s',
-                externalId=course.externalId,
-                profileId=profile.profile_id,
+            try:
+                course = COK.objects.get(course_id=request.path.split('/')[-1])
+            except COK.DoesNotExist as e:
+                logger.error(f'COK course does not exist. Course {request.path.split("/")[-1]}')
+                course = None
+            else:
+                EducontStatisticsItem.objects.create(
+                    statisticType='s',
+                    externalId=course.externalId,
+                    profileId=profile.profile_id,
 
-            )
+                )
         elif view_name == 'render_xblock':
             # for d in dir(request):
             #     if hasattr(request, d):
