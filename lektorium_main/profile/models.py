@@ -409,7 +409,7 @@ def get_message_status_educont_profile(user):
     else:
         return StatusMessage.empty_message
 
-def disconnect_user(association_id):
+def disconnect_user_educont(association_id):
     try:
         provider = UserSocialAuth.objects.get(id=association_id).provider
         if provider == "educont":
