@@ -1,6 +1,9 @@
+import datetime
 import hashlib
+import ipaddress
 import json
 import logging
+from typing import Optional
 
 # from common.djangoapps.third_party_auth.models import get_setting
 import jwt
@@ -9,13 +12,13 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import NinjaAPI, ModelSchema, Schema
 from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
-import datetime
-from django.utils import timezone
-from typing import Optional
+
 from lektorium_main.profile.models import Profile
+
 log = logging.getLogger(__name__)
 
 api = NinjaAPI(csrf=True)
@@ -67,10 +70,13 @@ class UserSchema(ModelSchema):
         model = User
         model_fields = ['username', 'email', 'is_staff', 'is_active']
 
+
 UserProfileSchema = create_schema(
     Profile,
     depth=2
 )
+
+
 # class educationalInstitutionIn(Schema):
 #     address: str= None
 #     fullName: str= None
@@ -147,10 +153,12 @@ def genToken(request):
     token = gen_tokenV2(method=method, path=path)
     return token
 
+
 def utcformat(dt, tz, timespec='milliseconds'):
     """convert datetime to string in UTC format (YYYY-mm-ddTHH:MM:SS.mmmZ)"""
     iso_str = dt.astimezone(tz).isoformat('T', timespec)
     return iso_str.replace('+03:00', 'Z')
+
 
 @api.post('/feedback', auth=django_auth)
 def feedback(request):
@@ -167,17 +175,25 @@ def feedback(request):
         body['externalUserId'] = str(user.id)
         body['createdAt'] = str(now)
         token = gen_tokenV2(method=method, path=path, body=body)
-        response = requests.post(url=path, json=body, headers={ "Content-Type": "application/json", "Authorization": 'Bearer {0}'.format(token) })
+        response = requests.post(url=path, json=body, headers={"Content-Type": "application/json",
+                                                               "Authorization": 'Bearer {0}'.format(token)})
         log.warning(f"Response: {response.status_code}, {response.content}")
         return {"status": response.status_code}
     else:
         return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
 
+
 class SSEStatus(Schema):
     profile_id: str
     status: str
 
-@api.post('/sse')  # TODO: create auth (mb remote user?)
+
+def ip_whitelist(request):
+    if ipaddress.ip_address(request.META["REMOTE_ADDR"]).is_private:
+        return True
+
+
+@api.post('/sse', auth=ip_whitelist)
 def sse(request, sse_status: SSEStatus):
     profile = Profile.objects.get(id=sse_status.profile_id)
     status = sse_status.status
@@ -185,7 +201,3 @@ def sse(request, sse_status: SSEStatus):
         profile.approve()
     elif status == 'NOT_APPROVED':
         profile.disapprove()
-
-
-
-
