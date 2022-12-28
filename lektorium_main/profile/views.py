@@ -1,6 +1,6 @@
 import logging
 
-from django.http import JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Profile
@@ -19,4 +19,6 @@ def sse(request, *args, **kwargs):
             profile.approve()
         elif status == 'NOT_APPROVED':
             profile.disapprove()
-        return JsonResponse({"status": 200})
+        return HttpResponse('', status_code=200)
+    else:
+        return HttpResponse('', status_code=405)
