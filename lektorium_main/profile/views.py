@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def sse(request, *args, **kwargs):
     if request.method == "POST":
         profile_id = request.POST["profile_id"]
-        status = request.POST("status")
+        status = request.POST["status"]
         profile = Profile.objects.get(id=profile_id)
 
         if status == 'APPROVED':
