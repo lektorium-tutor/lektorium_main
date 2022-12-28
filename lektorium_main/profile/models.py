@@ -107,6 +107,16 @@ class Profile(PolymorphicModel, BaseModel):
         else:
             return False
 
+    def approve(self):
+        self.educationalInstitutions.approvedStatus = 'APPROVED'
+        self.educationalInstitutions.save()
+
+    def disapprove(self):
+        self.educationalInstitutions.approvedStatus = 'NOT_APPROVED'
+        self.educationalInstitutions.save()
+
+
+
     @property
     def is_not_approved(self):
         if self.is_empty_edu_insts:
