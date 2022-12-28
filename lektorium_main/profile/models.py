@@ -48,7 +48,7 @@ class Profile(PolymorphicModel, BaseModel):
     birthyear = models.CharField(max_length=50, null=True, blank=True)
 
     user = models.OneToOneField(get_user_model(), unique=True, db_index=True, related_name='verified_profile_educont',
-                             verbose_name="Пользователь", on_delete=models.CASCADE, null=True)
+                             verbose_name="Пользователь", on_delete=models.CASCADE, null=True, blank=True)
     profile_id = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:

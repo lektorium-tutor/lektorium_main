@@ -23,11 +23,14 @@ lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 @admin.register(StudentProfile, site=lekt_admin_site)
 class StudentProfileAdmin(admin.ModelAdmin):
     list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
-
+    search_fields = ('user__email')
+    autocomplete_fields = ["user", ]
 
 @admin.register(TeacherProfile, site=lekt_admin_site)
 class TeacherProfileAdmin(admin.ModelAdmin):
     list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
+    search_fields = ('user__email')
+    autocomplete_fields = ["user", ]
 
 
 @admin.register(EducationalInstitution, site=lekt_admin_site)
