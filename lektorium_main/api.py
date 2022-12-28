@@ -147,14 +147,16 @@ def genToken(request):
     token = gen_tokenV2(method=method, path=path)
     return token
 
-def utcformat(dt, timespec='milliseconds'):
+def utcformat(dt, tz, timespec='milliseconds'):
     """convert datetime to string in UTC format (YYYY-mm-ddTHH:MM:SS.mmmZ)"""
-    iso_str = dt.astimezone(datetime.timezone.utc).isoformat('T', timespec)
-    return iso_str.replace('+00:00', 'Z')
+    iso_str = dt.astimezone(tz).isoformat('T', timespec)
+    return iso_str.replace('+03:00', 'Z')
 
 @api.post('/feedback', auth=django_auth)
 def feedback(request):
-    now = utcformat(datetime.datetime.now(tz=datetime.timezone.utc))
+    offset = datetime.timedelta(hours=3)
+    tz = datetime.timezone(offset, name="Europe/Moscow")
+    now = utcformat(datetime.datetime.now(tz=tz), tz)
     body = json.loads(request.body.decode())
     path = f'{settings.EDUCONT_BASE_URL}/api/v1/public/educational-courses/feedback'
     method = "POST"
