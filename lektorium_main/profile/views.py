@@ -19,8 +19,8 @@ def sse(request, *args, **kwargs):
             profile.approve()
         elif status == 'NOT_APPROVED':
             profile.disapprove()
-        return HttpResponse(json.dumps({"status": "ok"}), status_code=200)
+        return HttpResponse(json.dumps({"status": "ok"}), status=200)
     elif request.method == "GET":
-        return HttpResponse(json.dumps({"status": "ok"}), status_code=200)
+        return HttpResponse(json.dumps({"status": "ok"}), status=200)
     else:
-        return HttpResponse('', status_code=405)
+        return HttpResponse('', status=405)
