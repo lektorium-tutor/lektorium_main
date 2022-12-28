@@ -10,6 +10,7 @@ from opaque_keys.edx.keys import CourseKey
 from lektorium_main.core.models import BaseModel
 from lektorium_main.courses.models import COK
 import logging
+from social_django.models import UserSocialAuth
 
 logger = logging.getLogger('lektorium_main.profiles.models')
 
@@ -407,3 +408,14 @@ def get_message_status_educont_profile(user):
             return StatusMessage.empty_message
     else:
         return StatusMessage.empty_message
+
+def disconnect_user(association_id):
+    try:
+        provider = UserSocialAuth.objects.get(id=association_id).provider
+        if provider == "educont":
+            user = UserSocialAuth.objects.get(id=association_id).user
+            profile = Profile.get_polymorph_profile(user)
+            profile.user = None
+            profile.save()
+    except (ValueError, UserSocialAuth.DoesNotExist):
+            return None
