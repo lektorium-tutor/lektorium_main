@@ -189,13 +189,12 @@ def ip_whitelist(request):
     if ipaddress.ip_address(request.META["REMOTE_ADDR"]).is_private:
         return True
 
-
-@api.post('/sse')
-def sse(request, sse_status: SSEStatus):
-    profile = Profile.objects.get(id=sse_status.profile_id)
-    status = sse_status.status
-    if status == 'APPROVED':
-        profile.approve()
-    elif status == 'NOT_APPROVED':
-        profile.disapprove()
-    return {"status": 200}
+# @api.post('/sse')
+# def sse(request, sse_status: SSEStatus):
+#     profile = Profile.objects.get(id=sse_status.profile_id)
+#     status = sse_status.status
+#     if status == 'APPROVED':
+#         profile.approve()
+#     elif status == 'NOT_APPROVED':
+#         profile.disapprove()
+#     return {"status": 200}

@@ -11,7 +11,7 @@ from openedx.features.course_experience.utils import get_course_outline_block_tr
 # from openedx.core.lib.courses import get_course_by_id
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MatchingMaterialsView(View):
