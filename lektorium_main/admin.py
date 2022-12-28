@@ -4,6 +4,9 @@ import json
 from completion.models import BlockCompletion
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.admin.sites import NotRegistered
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
@@ -19,17 +22,36 @@ class LEKTAdminSite(admin.AdminSite):
 
 lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 
+User = get_user_model()
+
+try:
+    admin.site.unregister(User)
+except NotRegistered:
+    pass
+
+
+@admin.register(User, site=lekt_admin_site)
+class UserAdmin(BaseUserAdmin):
+    save_on_top = True
+    search_fields = ('email', 'username')
+
+    def get_ordering(self, request):
+        return ['-date_joined']
+
 
 @admin.register(StudentProfile, site=lekt_admin_site)
 class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
-    search_fields = ('user__email')
+    save_on_top = True
+    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail')
+    search_fields = ('fullName', 'email', 'user__email')
     autocomplete_fields = ["user", ]
+
 
 @admin.register(TeacherProfile, site=lekt_admin_site)
 class TeacherProfileAdmin(admin.ModelAdmin):
-    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail', )
-    search_fields = ('user__email')
+    save_on_top = True
+    list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail')
+    search_fields = ('fullName', 'email', 'user__email',)
     autocomplete_fields = ["user", ]
 
 
@@ -85,6 +107,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(COK, site=lekt_admin_site)
 class COKAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('courseName', 'externalLink', 'courseDescription')
     autocomplete_fields = ('tags',)
     readonly_fields = ('id', 'courseTypeId', 'raw_course_outline_data', 'created', 'modified',)
@@ -138,6 +161,7 @@ class COKAdmin(admin.ModelAdmin):
 
 @admin.register(Section, site=lekt_admin_site)
 class SectionAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('externalId', 'courseName')
     search_fields = ('externalId', 'courseName')
     autocomplete_fields = ['externalParent', ]
@@ -147,6 +171,7 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Topic, site=lekt_admin_site)
 class TopicAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('externalId', 'courseName')
     autocomplete_fields = ('externalParent',)
     exclude_fields = ['order', ]
@@ -155,6 +180,7 @@ class TopicAdmin(admin.ModelAdmin):
 
 @admin.register(TeachingMaterial, site=lekt_admin_site)
 class TeachingMaterialAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('externalId', 'courseName', 'tags_display')
     autocomplete_fields = ('tags',)
     exclude_fields = ['order', ]
