@@ -1,5 +1,5 @@
 import logging
-
+from django.http import JsonResponse
 from .models import Profile
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ def sse(request, *args, **kwargs):
             profile.approve()
         elif status == 'NOT_APPROVED':
             profile.disapprove()
-        return {"status": 200}
+        return JsonResponse({"status": 200})
 
 
 
