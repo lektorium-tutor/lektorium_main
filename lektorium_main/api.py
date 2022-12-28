@@ -190,7 +190,7 @@ def ip_whitelist(request):
         return True
 
 
-@api.post('/sse', auth=ip_whitelist)
+@api.post('/sse')
 def sse(request, sse_status: SSEStatus):
     profile = Profile.objects.get(id=sse_status.profile_id)
     status = sse_status.status
