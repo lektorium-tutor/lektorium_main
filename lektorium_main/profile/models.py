@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from common.djangoapps.student.models import CourseEnrollment
@@ -5,14 +6,15 @@ from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
 from django.urls import reverse
-from polymorphic.models import PolymorphicModel
 from opaque_keys.edx.keys import CourseKey
-from lektorium_main.core.models import BaseModel
-from lektorium_main.courses.models import COK
-import logging
+from polymorphic.models import PolymorphicModel
 from social_django.models import UserSocialAuth
 
+from lektorium_main.core.models import BaseModel
+from lektorium_main.courses.models import COK
+
 logger = logging.getLogger('lektorium_main.profiles.models')
+
 
 class Profile(PolymorphicModel, BaseModel):
     class StatusConfirmEmail(models.TextChoices):
@@ -48,7 +50,7 @@ class Profile(PolymorphicModel, BaseModel):
     birthyear = models.CharField(max_length=50, null=True, blank=True)
 
     user = models.OneToOneField(get_user_model(), unique=True, db_index=True, related_name='verified_profile_educont',
-                             verbose_name="Пользователь", on_delete=models.CASCADE, null=True, blank=True)
+                                verbose_name="Пользователь", on_delete=models.CASCADE, null=True, blank=True)
     profile_id = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -108,14 +110,12 @@ class Profile(PolymorphicModel, BaseModel):
             return False
 
     def approve(self):
-        self.educationalInstitutions.approvedStatus = 'APPROVED'
-        self.educationalInstitutions.save()
+        self.educationalInstitutions.update(approvedStatus='APPROVED')
+        self.user.update(is_active=True)
 
     def disapprove(self):
-        self.educationalInstitutions.approvedStatus = 'NOT_APPROVED'
-        self.educationalInstitutions.save()
-
-
+        self.educationalInstitutions.update(approvedStatus='NOT_APPROVED')
+        self.user.update(is_active=False)
 
     @property
     def is_not_approved(self):
@@ -206,7 +206,8 @@ class EducationalInstitution(BaseModel):
     address = models.TextField('Полный адрес образовательной организации')
     locality = models.CharField('Город образовательной организации', max_length=100)
     region = models.CharField('Регион образовательной организации', max_length=100)
-    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50, blank=True, null=True)
+    municipalArea = models.CharField('Муниципальный район образовательной организации', max_length=50, blank=True,
+                                     null=True)
     isTest = models.BooleanField('Флаг "Тестовое учрждение"',
                                  help_text='Если значение "true", то для пользователя, который привязан к этому \
                                  учреждению не будет учитываться статистика',
@@ -419,6 +420,7 @@ def get_message_status_educont_profile(user):
     else:
         return StatusMessage.empty_message
 
+
 def disconnect_user_educont(association_id):
     try:
         provider = UserSocialAuth.objects.get(id=association_id).provider
@@ -428,4 +430,4 @@ def disconnect_user_educont(association_id):
             profile.user = None
             profile.save()
     except (ValueError, UserSocialAuth.DoesNotExist):
-            return None
+        return None
