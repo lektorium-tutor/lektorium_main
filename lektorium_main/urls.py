@@ -15,5 +15,5 @@ urlpatterns = [
     url('^api/', api.urls),
     # re_path(r'', TemplateView.as_view(template_name="lektorium_main/index.html")),
     path('matching', MatchingMaterialsView.as_view()),
-    path('api/sse', sse)
+    path('sse', sse)
 ]
