@@ -170,3 +170,20 @@ def feedback(request):
         return {"status": response.status_code}
     else:
         return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
+
+class SSEStatus(Schema):
+    profile_id: str
+    status: str
+
+@api.post('/sse')  # TODO: create auth (mb remote user?)
+def sse(request, sse_status: SSEStatus):
+    profile = Profile.objects.get(id=sse_status.profile_id)
+    status = sse_status.status
+    if status == 'APPROVED':
+        profile.approve()
+    elif status == 'NOT_APPROVED':
+        profile.disapprove()
+
+
+
+
