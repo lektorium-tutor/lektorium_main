@@ -29,9 +29,6 @@ class AuthBearer(HttpBearer):
         return token
 
 
-log = logging.getLogger(__name__)
-
-
 def gen_token(request, path):
     timestamp = int(timezone.now().timestamp())
     if request.method == "POST" or request.method == "PUT":
@@ -201,3 +198,4 @@ def sse(request, sse_status: SSEStatus):
         profile.approve()
     elif status == 'NOT_APPROVED':
         profile.disapprove()
+    return {"status": 200}
