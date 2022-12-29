@@ -8,7 +8,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 def apply_settings(django_settings):
     django_settings.SOCIAL_AUTH_PIPELINE += ['lektorium_main.pipeline.profile.create', ]
 
-    django_settings.EDUCONT_BASE_URL = 'https://api.dev.educont.ru'
+    django_settings.EDUCONT_BASE_URL = 'https://api.educont.ru'
     django_settings.LEARNING_BASE_URL = 'https://apps.class.lektorium.tv/learning/course'
     django_settings.SYSTEM_CODE_EDUCONT = "66a79e1f-0d24-46bf-9d77-a3af72e61384"
     django_settings.PRIVATE_KEY_EDUCONT = """-----BEGIN PRIVATE KEY-----
