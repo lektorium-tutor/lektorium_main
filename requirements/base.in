@@ -2,8 +2,9 @@
 -c constraints.txt
 
 Django             # Web application framework
-django-model-utils        # Provides TimeStampedModel abstract base class
-django-ninja
+django-model-utils # Provides TimeStampedModel abstract base class
+pydantic<1.10.3
+django-ninja<0.20.0
 orjson
 django-polymorphic
 social-auth-core
