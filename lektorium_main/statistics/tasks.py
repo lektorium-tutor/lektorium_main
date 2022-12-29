@@ -5,6 +5,7 @@ import requests
 from celery.schedules import crontab
 from django.conf import settings
 from lms import CELERY_APP
+from celery import shared_task
 
 from lektorium_main.api import utcformat, gen_tokenV2
 from .models import Transaction, EducontStatisticsItem, TransactionStatus, TransactionErrorMessage
@@ -30,7 +31,7 @@ CELERY_APP.conf.beat_schedule = {
 CELERY_APP.conf.timezone = 'Europe/Moscow'
 
 
-@CELERY_APP.task(name='send_stats')
+@shared_task(name='send_stats', bind=True)
 def send_stats_educont(*args, **kwargs):
     offset = datetime.timedelta(hours=3)
     tz = datetime.timezone(offset, name='Europe/Moscow')
@@ -49,7 +50,7 @@ def send_stats_educont(*args, **kwargs):
     transaction = Transaction.objects.create(id=response.text, status=TransactionStatus.__empty__)
 
 
-@CELERY_APP.task(name='ask_about_transactions')
+@shared_task(name='ask_about_transactions', bind=True)
 def ask_about_transactions(*args, **kwargs):
     for transaction in Transaction.objects.filter(status__in=
     [
