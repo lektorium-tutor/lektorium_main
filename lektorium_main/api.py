@@ -1,6 +1,5 @@
 import datetime
 import hashlib
-import ipaddress
 import json
 import logging
 from typing import Optional
@@ -13,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from ninja import NinjaAPI, ModelSchema, Schema
+from ninja import NinjaAPI, ModelSchema
 from ninja.orm import create_schema
 from ninja.security import django_auth, HttpBearer
 
@@ -106,7 +105,7 @@ def me(request):
 @api.delete("/profiles/{profile_id}", auth=django_auth)
 def delete_profile(request, profile_id: str):
     try:
-        if (User.objects.get(username=request.auth).is_superuser):
+        if User.objects.get(username=request.auth).is_superuser:
             profile = get_object_or_404(Profile, id=profile_id)
             profile.delete()
             return {"success": True}
@@ -114,17 +113,6 @@ def delete_profile(request, profile_id: str):
             raise PermissionDenied()
     except:
         pass
-
-
-# не работает просто тесты.
-@api.get('/test', auth=django_auth)
-def test(request):
-    # path = 'https://api.dev.educont.ru/api/v1/public/educational-courses/educational-platforms/{0}?approved=true'.format(
-    #     settings.SYSTEM_CODE_EDUCONT)
-    path = f'{settings.EDUCONT_BASE_URL}/api/v1/public/sse/connect'
-    token = gen_token(request=request, path=path)
-    # test = requests.get(url=path, headers={"Content-Type": "text/event-stream", "Authorization": 'Bearer {0}'.format(token)})
-    return token
 
 
 @api.get('/token')  # , auth=django_auth # TODO: construct some auth or limit this by local connections
@@ -178,23 +166,3 @@ def feedback(request):
         return {"status": response.status_code}
     else:
         return {"status": 404, "message": "Отсуствует связанный аккаунт Educont"}
-
-
-class SSEStatus(Schema):
-    profile_id: str
-    status: str
-
-
-def ip_whitelist(request):
-    if ipaddress.ip_address(request.META["REMOTE_ADDR"]).is_private:
-        return True
-
-# @api.post('/sse')
-# def sse(request, sse_status: SSEStatus):
-#     profile = Profile.objects.get(id=sse_status.profile_id)
-#     status = sse_status.status
-#     if status == 'APPROVED':
-#         profile.approve()
-#     elif status == 'NOT_APPROVED':
-#         profile.disapprove()
-#     return {"status": 200}
