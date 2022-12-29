@@ -10,9 +10,9 @@ import logging
 
 class CokOAuth2(BaseOAuth2):
     name = 'educont'
-    API_URL = 'https://educont.ru/api/v1'
+    API_URL = 'https://educont.ru/api/external/v1'
     AUTHORIZATION_URL = 'https://educont.ru/oauth/authorize'  # '{}/oauth2/authorize'.format(settings.SSO_ROO_URL)
-    ACCESS_TOKEN_URL = 'https://educont.ru/api/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
+    ACCESS_TOKEN_URL = 'https://educont.ru/api/external/v1/oauth/token'  # '{}/oauth2/access_token'.format(settings.SSO_ROO_URL)
     DEFAULT_SCOPE = ["external_system.read"]
     ACCESS_TOKEN_METHOD = 'POST'
     REDIRECT_STATE = False
@@ -50,6 +50,6 @@ class CokOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         logging.warning(dir(self))
-        return self.get_json('{0}/profile/detail'.format(self.API_URL), method="POST", headers={
+        return self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
             'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })
