@@ -47,6 +47,6 @@ class CokOAuth2(BaseOAuth2):
         }
 
     def user_data(self, access_token, *args, **kwargs):
-        return self.get_json('{0}/profile'.format(self.API_URL), method="POST", headers={
+        return self.get_json('{0}/profile/detail'.format(self.API_URL), method="POST", headers={
             'Authorization': '{0} {1}'.format(self.TOKEN_TYPE, access_token)
         })
