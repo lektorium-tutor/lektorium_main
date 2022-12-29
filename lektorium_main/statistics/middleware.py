@@ -48,12 +48,12 @@ class EducontStatisticsMiddleware(MiddlewareMixin):
             ).values_list('completion', flat=True))
             status = (completion >= len(vertical.get_children()))
 
-        EducontStatisticsItem.objects.create(
-            statisticType='s',
-            externalId=content.externalId,
-            profileId=profile.profile_id,
-            status=status if status else None
-        )
+            EducontStatisticsItem.objects.create(
+                statisticType='s',
+                externalId=content.externalId,
+                profileId=profile.profile_id,
+                status=status if status else None
+            )
         if hasattr(content, 'externalParent'):
             parent = content.externalParent
 

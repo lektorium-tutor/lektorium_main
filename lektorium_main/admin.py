@@ -10,10 +10,12 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
+from simple_history.admin import SimpleHistoryAdmin
+
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     EducationalInstitutions, StatusMessage
-from lektorium_main.statistics.models import EducontStatisticsItem
+from lektorium_main.statistics.models import EducontStatisticsItem, Transaction, TransactionErrorMessage
 
 
 class LEKTAdminSite(admin.AdminSite):
@@ -197,6 +199,17 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
 @admin.register(EducontStatisticsItem, site=lekt_admin_site)
 class EducontStatisticsItemAdmin(admin.ModelAdmin):
     list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
+    readonly_fields = ('transaction',)
+
+
+class TransactionErrorMessageInline(admin.TabularInline):
+    model = TransactionErrorMessage
+@admin.register(Transaction, site=lekt_admin_site)
+class TransactionAdmin(SimpleHistoryAdmin):
+
+    list_display = ('id', 'status', 'created', 'modified')
+    history_list_display = ('status',)
+    inlines = [TransactionErrorMessageInline,]
 
 
 @admin.register(BlockCompletion, site=lekt_admin_site)

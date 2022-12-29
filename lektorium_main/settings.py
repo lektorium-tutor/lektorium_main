@@ -39,6 +39,7 @@ wck2gRsIn/XNp7JdHjHNYO4zkT+8OHfbNFWEfgoNbCxhKBjzUHE5q6qCpUtqP15R
 4xKQKg7RWM0DV00Z5NMIcIMJ4PfemRUSWk9yIGReHgwPlYtSGjei6be6zn9qk5m9
 Q66RhL6+PGReF5QUCtUGAqIf
 -----END PRIVATE KEY-----"""
+    django_settings.SIMPLE_HISTORY_REVERT_DISABLED = True
 
 
 sentry_sdk.init(
