@@ -1,11 +1,11 @@
-import logging
 import datetime
 import logging
 
 import requests
-from celery import shared_task
+from celery.schedules import crontab
 from django.conf import settings
 from lms import CELERY_APP
+
 from lektorium_main.api import utcformat, gen_tokenV2
 from .models import Transaction, EducontStatisticsItem, TransactionStatus, TransactionErrorMessage
 
@@ -14,15 +14,13 @@ from .models import Transaction, EducontStatisticsItem, TransactionStatus, Trans
 
 logger = logging.getLogger('lektorium_main.profile.tasks')
 
-from celery.schedules import crontab
-
 CELERY_APP.conf.beat_schedule = {
     'nightly_send': {
         'task': 'send_stats',
         'schedule': crontab(hour=4, minute=28),
         'args': (),
     },
-'nightly_ask': {
+    'nightly_ask': {
         'task': 'ask_about_transactions',
         'schedule': crontab(minute=23),
         'args': (),
@@ -31,11 +29,8 @@ CELERY_APP.conf.beat_schedule = {
 
 CELERY_APP.conf.timezone = 'Europe/Moscow'
 
-@CELERY_APP.task(
-    name='send_stats',
-    bind=True,
-    acks_late=False,
-)
+
+@CELERY_APP.task(name='send_stats')
 def send_stats_educont(*args, **kwargs):
     offset = datetime.timedelta(hours=3)
     tz = datetime.timezone(offset, name='Europe/Moscow')
@@ -54,11 +49,7 @@ def send_stats_educont(*args, **kwargs):
     transaction = Transaction.objects.create(id=response.text, status=TransactionStatus.__empty__)
 
 
-@CELERY_APP.task(
-    name='ask_about_transactions',
-    bind=True,
-    acks_late=False,
-)
+@CELERY_APP.task(name='ask_about_transactions')
 def ask_about_transactions(*args, **kwargs):
     for transaction in Transaction.objects.filter(status__in=
     [
@@ -72,12 +63,13 @@ def ask_about_transactions(*args, **kwargs):
         response = requests.get(url=path,
                                 headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {token}'})
         if response.status_code != 200:
-            logger.error(f'Get transaction info returned {response.status_code} with text {response.text}. Transaction: {transaction.id}')
+            logger.error(
+                f'Get transaction info returned {response.status_code} with text {response.text}. Transaction: {transaction.id}')
             continue
 
         new_status = response.text
         if new_status in TransactionStatus.names:
-            transaction.update({'status':new_status})
+            transaction.update({'status': new_status})
 
         if new_status == TransactionStatus.WITH_ERRORS:
             logger.info(f'TransactionStatus.WITH_ERRORS: {response.text}')
@@ -87,6 +79,3 @@ def ask_about_transactions(*args, **kwargs):
                     message=error_msg,
                     transaction=transaction
                 )
-
-
-
