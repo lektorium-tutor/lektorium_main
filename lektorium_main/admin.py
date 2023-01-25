@@ -9,12 +9,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
-
 from simple_history.admin import SimpleHistoryAdmin
 
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
-    EducationalInstitutions, StatusMessage
+    StatusMessage
 from lektorium_main.statistics.models import EducontStatisticsItem, Transaction, TransactionErrorMessage
 
 
@@ -61,6 +60,7 @@ class TeacherProfileAdmin(admin.ModelAdmin):
 class EducationalInstitutionAdmin(admin.ModelAdmin):
     list_display = ('shortName',)
 
+
 #
 # @admin.register(EducationalInstitutions, site=lekt_admin_site)
 # class EducationalInstitutionsAdmin(admin.ModelAdmin):
@@ -76,7 +76,9 @@ class StatusMessageAdmin(admin.ModelAdmin):
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
     search_fields = ('name', 'parent__name')
-    list_filter = ('parent',)
+    list_filter = (
+        ('parent', admin.EmptyFieldListFilter),
+    )
 
     autocomplete_fields = ["parent", ]
 
@@ -205,12 +207,13 @@ class EducontStatisticsItemAdmin(admin.ModelAdmin):
 
 class TransactionErrorMessageInline(admin.TabularInline):
     model = TransactionErrorMessage
+
+
 @admin.register(Transaction, site=lekt_admin_site)
 class TransactionAdmin(SimpleHistoryAdmin):
-
     list_display = ('id', 'status', 'created', 'modified')
     history_list_display = ('status',)
-    inlines = [TransactionErrorMessageInline,]
+    inlines = [TransactionErrorMessageInline, ]
 
 
 @admin.register(BlockCompletion, site=lekt_admin_site)
