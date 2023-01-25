@@ -61,10 +61,10 @@ class TeacherProfileAdmin(admin.ModelAdmin):
 class EducationalInstitutionAdmin(admin.ModelAdmin):
     list_display = ('shortName',)
 
-
-@admin.register(EducationalInstitutions, site=lekt_admin_site)
-class EducationalInstitutionsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'approvedStatus', 'isActual',)
+#
+# @admin.register(EducationalInstitutions, site=lekt_admin_site)
+# class EducationalInstitutionsAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'approvedStatus', 'isActual',)
 
 
 @admin.register(StatusMessage, site=lekt_admin_site)
@@ -199,6 +199,7 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
 @admin.register(EducontStatisticsItem, site=lekt_admin_site)
 class EducontStatisticsItemAdmin(admin.ModelAdmin):
     list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
+    list_filter = ('statisticType', 'status')
     readonly_fields = ('transaction',)
 
 
