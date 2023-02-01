@@ -104,13 +104,13 @@ def create_educont_objects(modeladmin, request, queryset):
         course.create_educont_objects()
 
 
-# @admin.register(Course, site=lekt_admin_site)
-# class CourseAdmin(PolymorphicParentModelAdmin):
-#     list_display = ('courseName', 'externalId',)
-#     search_fields = ('courseName', 'externalId')
-#     base_model = Course  # Optional, explicitly set here.
-#     # child_models = (ModelB, ModelC)
-#     polymorphic_list = True
+@admin.register(Course, site=lekt_admin_site)
+class CourseAdmin(admin.ModelAdmin):  # PolymorphicParentModelAdmin):
+    list_display = ('courseName', 'externalId',)
+    search_fields = ('courseName', 'externalId')
+    # base_model = Course  # Optional, explicitly set here.
+    # child_models = (ModelB, ModelC)
+    # polymorphic_list = True
 
 
 @admin.register(COK, site=lekt_admin_site)
