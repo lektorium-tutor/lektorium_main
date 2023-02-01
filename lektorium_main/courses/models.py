@@ -23,7 +23,7 @@ from openedx.core.djangoapps.content.learning_sequences.api import get_course_ou
 from openedx.core.djangoapps.content.learning_sequences.data import CourseOutlineData
 from polymorphic.models import PolymorphicModel
 from xmodule.modulestore.django import modulestore
-
+from polymorphic.showfields import ShowFieldType
 from lektorium_main.core.models import BaseModel
 
 log = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ class Tag(BaseModel):
         verbose_name_plural = 'теги'
 
 
-class Course(PolymorphicModel, TimeStampedModel):
+class Course(ShowFieldType, PolymorphicModel, TimeStampedModel):
     """
     Учебный материал (в том числе ЦОК), который предоставляет образовательная платформа
     для изучения пользователям.

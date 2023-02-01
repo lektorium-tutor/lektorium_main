@@ -10,6 +10,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from simple_history.admin import SimpleHistoryAdmin
+from polymorphic.admin import PolymorphicParentModelAdmin
 
 from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, TeachingMaterial
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
@@ -103,10 +104,13 @@ def create_educont_objects(modeladmin, request, queryset):
         course.create_educont_objects()
 
 
-@admin.register(Course, site=lekt_admin_site)
-class CourseAdmin(admin.ModelAdmin):
-    list_display = ('courseName', 'externalId',)
-    search_fields = ('courseName', 'externalId')
+# @admin.register(Course, site=lekt_admin_site)
+# class CourseAdmin(PolymorphicParentModelAdmin):
+#     list_display = ('courseName', 'externalId',)
+#     search_fields = ('courseName', 'externalId')
+#     base_model = Course  # Optional, explicitly set here.
+#     # child_models = (ModelB, ModelC)
+#     polymorphic_list = True
 
 
 @admin.register(COK, site=lekt_admin_site)
