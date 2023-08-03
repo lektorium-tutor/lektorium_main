@@ -5,7 +5,9 @@ lektorium_main Django application initialization.
 from django.apps import AppConfig
 from django.conf import settings
 
+from edx_django_utils.plugins import PluginURLs
 
+from openedx.core.djangoapps.plugins.constants import ProjectType
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -19,6 +21,15 @@ class LektoriumMainConfig(AppConfig):
 
     name = 'lektorium_main'
     verbose_name = 'Lektorium main app'
+    plugin_app = {
+        PluginURLs.CONFIG: {
+            ProjectType.LMS: {
+                PluginURLs.NAMESPACE: 'lektorium_main',
+                PluginURLs.REGEX: 'lektorium_main',
+                PluginURLs.RELATIVE_PATH: 'urls',
+            }
+        },
+    }
 
     def ready(self):
         if settings.FEATURES.get('ENABLE_LEKTORIUM_MAIN', False):
