@@ -7,7 +7,7 @@ from django.conf import settings
 
 from edx_django_utils.plugins import PluginURLs
 
-from openedx.core.djangoapps.plugins.constants import ProjectType
+from .constants import ProjectType
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -24,8 +24,8 @@ class LektoriumMainConfig(AppConfig):
     plugin_app = {
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
-                PluginURLs.NAMESPACE: 'lektorium_main',
-                PluginURLs.REGEX: 'lektorium_main',
+                PluginURLs.NAMESPACE: 'lekt',
+                PluginURLs.REGEX: '',
                 PluginURLs.RELATIVE_PATH: 'urls',
             }
         },
