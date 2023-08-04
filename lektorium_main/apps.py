@@ -24,7 +24,7 @@ class LektoriumMainConfig(AppConfig):
     plugin_app = {
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
-                PluginURLs.NAMESPACE: 'lekt',
+                PluginURLs.NAMESPACE: 'lektorium_main',
                 PluginURLs.REGEX: '',
                 PluginURLs.RELATIVE_PATH: 'urls',
             }
