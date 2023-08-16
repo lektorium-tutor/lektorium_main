@@ -56,6 +56,9 @@ sentry_sdk.init(
     send_default_pii=True
 )
 
+def plugin_settings(settings):
+    pass
+    
 # SOCIAL_AUTH_PIPELINE = ['lektorium_main.oauth2.pipeline.profile.save_profile', ]
 
 # insert_enterprise_pipeline_elements(SOCIAL_AUTH_PIPELINE)

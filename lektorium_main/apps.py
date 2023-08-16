@@ -7,7 +7,7 @@ from django.conf import settings
 
 from edx_django_utils.plugins import PluginURLs
 
-from .constants import ProjectType
+from .constants import ProjectType, SettingsType
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -25,10 +25,16 @@ class LektoriumMainConfig(AppConfig):
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
                 PluginURLs.NAMESPACE: 'lektorium_main',
-                PluginURLs.REGEX: '',
                 PluginURLs.RELATIVE_PATH: 'urls',
             }
         },
+       'settings_config': {
+            ProjectType.LMS: {
+                SettingsType.PRODUCTION : { 'relative_path': 'settings' },
+                SettingsType.COMMON: { 'relative_path': 'settings' },
+                SettingsType.DEVSTACK: { 'relative_path': 'settings' },
+            }
+        }
     }
 
     def ready(self):

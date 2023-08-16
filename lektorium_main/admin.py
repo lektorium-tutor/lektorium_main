@@ -16,6 +16,7 @@ from lektorium_main.courses.models import Course, Tag, COK, Section, Topic, Teac
 from lektorium_main.profile.models import TeacherProfile, StudentProfile, EducationalInstitution, \
     StatusMessage
 from lektorium_main.statistics.models import EducontStatisticsItem, Transaction, TransactionErrorMessage
+from lektorium_main.tilda.models import TildaArticle
 
 
 class LEKTAdminSite(admin.AdminSite):
@@ -223,3 +224,20 @@ class TransactionAdmin(SimpleHistoryAdmin):
 @admin.register(BlockCompletion, site=lekt_admin_site)
 class BlockCompletionAdmin(admin.ModelAdmin):
     list_display = ('user', 'block_key')
+
+
+@admin.register(TildaArticle, site=lekt_admin_site)
+class TildaArticleAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('course_id', )
+    search_fields = ('course_id', )
+    
+    def save_model(self, request, obj, form, change):
+        # распаковка архива при импорте
+        archive_changed = 'archive' in form.changed_data
+        
+        # запишет файл на диск
+        super(TildaArticleAdmin, self).save_model(request, obj, form, change)
+
+        if archive_changed and obj.archive:
+            obj.import_archive()
