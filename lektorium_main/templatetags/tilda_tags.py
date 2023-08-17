@@ -2,7 +2,10 @@ from django import template
 from django.utils.safestring import mark_safe
 from lektorium_main.tilda.models import TildaArticle
 from django.shortcuts import get_object_or_404
+import logging
 register = template.Library()
+
+log = logging.getLogger(__name__)
 
 
 @register.simple_tag

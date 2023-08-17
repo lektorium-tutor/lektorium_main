@@ -7,7 +7,7 @@ from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.content.learning_sequences.api import get_course_outline
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from django.core.exceptions import ValidationError
-
+import logging
 from lektorium_main.tilda.utils import IrkruTildaArchive
 
 
@@ -27,7 +27,7 @@ class TildaArticle(models.Model):
              raise ValidationError(u"Такой Course ID не найден")
 
     def _extract_path(self):
-        return u'tilda/{year}/{folder}/{course_id}'.format(
+        return u'tilda/{year}/{folder}/{course_id}/'.format(
             year=datetime.date.today().year,
             folder=os.path.basename(os.path.splitext(self.archive.path)[0]),
             course_id=self.course_id
@@ -37,12 +37,14 @@ class TildaArticle(models.Model):
     def tilda_extract_root(self):
         """Путь к папке, в которую разархивированы файлы после импорта"""
         if self.archive:
+            logging.warning(settings.MEDIA_ROOT + self._extract_path())
             return settings.MEDIA_ROOT + self._extract_path()
 
     @property
     def tilda_extract_url(self):
         """URL папки с распакованными файлами"""
         if self.archive:
+            logging.warning(settings.MEDIA_ROOT + self._extract_path())
             return settings.MEDIA_URL + self._extract_path()
 
     def prepare_content(self):
