@@ -1,36 +1,35 @@
-{% extends "wiki/base.html" %}
-{% load i18n static %}
-{% load django_markup %}
+{% extends "wiki/base.html" %} {% load i18n static %} {% load django_markup %} {% block headextra %}
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+<script>
+    hljs.highlightAll();
+</script>
+{% endblock %} {% block body %}
+<h1>Learning materials matching</h1>
 
-{% block headextra %}
-    <link rel="stylesheet"
-          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
-{% endblock %}
+{% for course in courses %}
+<h2>{{ course.obj.display_name }}</h2>
+<p><small>{{ course.obj.id }}</small></p>
 
-{% block body %}
-    <h1>Learning materials matching</h1>
+<p>
+    <a
+        class="btn btn-primary"
+        data-toggle="collapse"
+        href="#json_{{ forloop.counter }}"
+        role="button"
+        aria-expanded="false"
+        aria-controls="#json_{{ forloop.counter }}"
+        aria-label="Toggle JSON"
+    >
+        Toggle JSON
+    </a>
+</p>
+<div class="collapse" id="#json_{{ forloop.counter }}">
+    <div class="card card-body">
+        <pre><code class="language-json">{{ course.blocks }}</code></pre>
+    </div>
+</div>
 
-    {% for course in courses %}
-        <h2>{{ course.obj.display_name }}</h2>
-        <p><small>{{ course.obj.id }}</small></p>
-
-        <p>
-            <a class="btn btn-primary" data-toggle="collapse" href="#json_{{ forloop.counter }}" role="button"
-               aria-expanded="false" aria-controls="#json_{{ forloop.counter }}" aria-label="Toggle JSON">
-                Toggle JSON
-            </a>
-        </p>
-        <div class="collapse" id="#json_{{ forloop.counter }}">
-            <div class="card card-body">
-                <pre><code class="language-json">{{ course.blocks }}</code></pre>
-            </div>
-        </div>
-
-
-
-    {% empty %}
-        <p>There is no courses</p>
-    {% endfor %}
-{% endblock body %}
+{% empty %}
+<p>There is no courses</p>
+{% endfor %} {% endblock body %}

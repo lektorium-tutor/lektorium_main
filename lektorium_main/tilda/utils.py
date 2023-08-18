@@ -21,23 +21,23 @@ class TildaArchive(object):
         with zipfile.ZipFile(self.path) as zf:
             for zipinfo in zf.infolist():
                 # парсинг контента
-                with zf.open(zipinfo) as f:
-                    self.content(zipinfo, f)
+                # with zf.open(zipinfo) as f:
+                #     self.content(zipinfo, f)
 
                 # распаковка
                 with zf.open(zipinfo) as f:
+                    print(zipinfo.filename)
                     save_as = self.extract_path(zipinfo)
                     if save_as:
                         self.save(f, save_as)
 
-            self.done()
+            # self.done()
 
     def save(self, source, targetpath):
-        # Create all upper directories if necessary
+        # Create all upper directories if necessaryd
         upperdirs = os.path.dirname(targetpath)
         if upperdirs and not os.path.exists(upperdirs):
             os.makedirs(upperdirs)
-
         with open(targetpath, "wb") as target:
             shutil.copyfileobj(source, target)
 
@@ -56,32 +56,32 @@ class IrkruTildaArchive(TildaArchive):
         self.extract_root = material.tilda_extract_root
         self.extract_url = material.tilda_extract_url
 
-    def content(self, zipinfo, f):
-        """
-        Из html-файла парсит ссылки на стили и скрипты
-        """
-        filename = self.strip_project(zipinfo.filename)
+    # def content(self, zipinfo, f):
+    #     """
+    #     Из html-файла парсит ссылки на стили и скрипты
+    #     """
+    #     filename = self.strip_project(zipinfo.filename)
 
-        if re.match(r'page\d+.html', filename):
-            html = f.read().decode('utf-8')
-            self.styles, self.scripts = self.assets(html)
-        elif re.match(r'files/page\d+body.html', filename):
-            self.body = f.read().decode('utf-8')
+    #     if re.match(r'page\d+.html', filename):
+    #         html = f.read().decode('utf-8')
+    #         self.styles, self.scripts = self.assets(html)
+    #     elif re.match(r'files/page\d+body.html', filename):
+    #         self.body = f.read().decode('utf-8')
 
-    def done(self):
-        """
-        Вызывается после обработки всех файлов
-        """
-        if self.styles:
-            self.material.styles = '\n'.join(self.styles)
+    # def done(self):
+    #     """
+    #     Вызывается после обработки всех файлов
+    #     """
+    #     if self.styles:
+    #         self.material.styles = '\n'.join(self.styles)
 
-        if self.scripts:
-            self.material.scripts = '\n'.join(self.scripts)
+    #     if self.scripts:
+    #         self.material.scripts = '\n'.join(self.scripts)
 
-        if self.body:
-            self.material.tilda_content = self.body
+    #     if self.body:
+    #         self.material.tilda_content = self.body
 
-        self.material.save()
+    #     self.material.save()
 
     def extract_path(self, zipinfo):
         filename = self.strip_project(zipinfo.filename)
@@ -89,24 +89,29 @@ class IrkruTildaArchive(TildaArchive):
 
         if self.is_css(filename) or self.is_js(filename) or self.is_image(filename):
             path = os.path.join(self.extract_root, filename)
-
+        elif self.is_another(filename):
+            path = os.path.join(self.extract_root, re.sub(r'project\d+/', './', zipinfo.filename).lstrip('/'))
         return path
 
-    @staticmethod
-    def assets(html):
-        styles, scripts = None, None
+    # @staticmethod
+    # def assets(html):
+    #     styles, scripts = None, None
 
-        link_pattern = re.compile(r'''<link[^>]+rel=["']stylesheet["'].+?>''')
-        styles = link_pattern.findall(html)
+    #     link_pattern = re.compile(r'''<link[^>]+rel=["']stylesheet["'].+?>''')
+    #     styles = link_pattern.findall(html)
 
-        link_pattern = re.compile(r'''<script\s+src=["'].+?></script>''')
-        scripts = link_pattern.findall(html)
+    #     link_pattern = re.compile(r'''<script\s+src=["'].+?></script>''')
+    #     scripts = link_pattern.findall(html)
 
-        return styles, scripts
+    #     return styles, scripts
 
     @staticmethod
     def strip_project(filename):
         return re.sub(r'project\d+/', '', filename).lstrip('/')
+
+    @staticmethod
+    def is_another(filename):
+        return filename.endswith('.html') or filename.endswith('.txt') or filename.endswith('.xml')
 
     @staticmethod
     def is_css(filename):
@@ -118,4 +123,4 @@ class IrkruTildaArchive(TildaArchive):
 
     @staticmethod
     def is_image(filename):
-        return re.match(r'(project\d+/)?images/[-a-z0-9_]+\.(png|jpg|jpeg)', filename, re.I)
+        return re.match(r'(project\d+/)?images/[-a-z0-9_]+\.(png|jpg|jpeg|svg)', filename, re.I)

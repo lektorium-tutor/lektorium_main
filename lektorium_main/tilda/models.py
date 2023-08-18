@@ -27,25 +27,27 @@ class TildaArticle(models.Model):
              raise ValidationError(u"Такой Course ID не найден")
 
     def _extract_path(self):
-        return u'tilda/{year}/{folder}/{course_id}/'.format(
+        return u'tilda/{year}/{course_id}/{folder}/'.format(
             year=datetime.date.today().year,
+            course_id=self.course_id,
             folder=os.path.basename(os.path.splitext(self.archive.path)[0]),
-            course_id=self.course_id
         )
 
     @property
     def tilda_extract_root(self):
         """Путь к папке, в которую разархивированы файлы после импорта"""
         if self.archive:
-            logging.warning(settings.MEDIA_ROOT + self._extract_path())
             return settings.MEDIA_ROOT + self._extract_path()
 
     @property
     def tilda_extract_url(self):
         """URL папки с распакованными файлами"""
         if self.archive:
-            logging.warning(settings.MEDIA_ROOT + self._extract_path())
             return settings.MEDIA_URL + self._extract_path()
+        
+    @classmethod
+    def get_latest_object(cls, course_id):
+        return cls.objects.filter(course_id=course_id).latest('id')
 
     def prepare_content(self):
         """Возвращает готовый к выводу хтмл"""
@@ -64,6 +66,12 @@ class TildaArticle(models.Model):
         if self.archive:
             archive = IrkruTildaArchive(self.archive, material=self)
             archive.process()
+    
+    def get_page(self):
+        path = self.tilda_extract_root
+        for filename in os.listdir(path):
+            if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
+                return (path + filename).replace("/openedx/", "") # TODO: Доделать этот моментик
     
     def if_exists_course(self):
         course_key = CourseKey.from_string(self.course_id)

@@ -24,7 +24,7 @@ class MatchingMaterialsView(View):
     """
 
     template_name = "lektorium_main/materials.html"
-
+    
     def get(self, request, *args, **kwargs):
         context = dict()
         courses = list()
