@@ -49,18 +49,6 @@ class TildaArticle(models.Model):
     def get_latest_object(cls, course_id):
         return cls.objects.filter(course_id=course_id).latest('id')
 
-    def prepare_content(self):
-        """Возвращает готовый к выводу хтмл"""
-        result = self.tilda_content.replace('="images/', '="{}images/'.format(self.tilda_extract_url))
-        result = result.replace("url('images/", "url('{}images/".format(self.tilda_extract_url))
-        return result
-
-    def prepare_scripts(self):
-        return self.scripts.replace('src="js/', 'src="{}js/'.format(self.tilda_extract_url))
-
-    def prepare_styles(self):
-        return self.styles.replace('href="css/', 'href="{}css/'.format(self.tilda_extract_url))
-
     def import_archive(self):
         """Распаковать и импортировать загруженный в `archive` файл из Тильды"""
         if self.archive:
@@ -71,7 +59,9 @@ class TildaArticle(models.Model):
         path = self.tilda_extract_root
         for filename in os.listdir(path):
             if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
-                return (path + filename).replace("/openedx/", "") # TODO: Доделать этот моментик
+                full_path = (path + filename)
+                HtmlFile = open(full_path, "r")
+                return HtmlFile.read()
     
     def if_exists_course(self):
         course_key = CourseKey.from_string(self.course_id)

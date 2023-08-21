@@ -10,3 +10,4 @@ django-polymorphic
 social-auth-core
 sentry-sdk
 edx-django-utils
+beautifulsoup4

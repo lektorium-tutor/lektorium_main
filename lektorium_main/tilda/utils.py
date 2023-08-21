@@ -30,7 +30,10 @@ class TildaArchive(object):
                     save_as = self.extract_path(zipinfo)
                     if save_as:
                         self.save(f, save_as)
-
+        
+        tilda_page = self.prepare_html()
+        with open(self.get_full_path_tildapage(), 'w') as file:
+            file.write(tilda_page)
             # self.done()
 
     def save(self, source, targetpath):
@@ -82,6 +85,30 @@ class IrkruTildaArchive(TildaArchive):
     #         self.material.tilda_content = self.body
 
     #     self.material.save()
+    def prepare_content(self, html):
+        """Возвращает готовый к выводу хтмл"""
+        result = html.replace('="images/', '="{}images/'.format(self.extract_url))
+        result = result.replace("url('images/", "url('{}images/".format(self.extract_url))
+        result = result.replace("js/jquery-1.10.2.min.js", "")
+        result = result.replace('src="js/', 'src="{}js/'.format(self.extract_url))
+        result = result.replace('href="css/', 'href="{}css/'.format(self.extract_url))
+        result = result.replace("data-original='images/", "data-original='{}images/".format(self.extract_url))
+        return result
+
+    def prepare_html(self):
+        path = self.extract_root
+        for filename in os.listdir(path):
+            if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
+                full_path = (path + filename)
+                HtmlFile = open(full_path, "r")
+                return self.prepare_content(HtmlFile.read())
+            
+    def get_full_path_tildapage(self):
+        path = self.extract_root
+        for filename in os.listdir(path):
+            if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
+                full_path = (path + filename)
+                return full_path
 
     def extract_path(self, zipinfo):
         filename = self.strip_project(zipinfo.filename)
@@ -119,7 +146,7 @@ class IrkruTildaArchive(TildaArchive):
 
     @staticmethod
     def is_js(filename):
-        return filename.startswith('js/') and filename.endswith('.js')
+        return filename.startswith('js/') and filename.endswith('.js') and not filename.startswith('js/jquery-1.10.2.min.js')
 
     @staticmethod
     def is_image(filename):
