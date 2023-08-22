@@ -5,9 +5,12 @@ lektorium_main Django application initialization.
 from django.apps import AppConfig
 from django.conf import settings
 
-from edx_django_utils.plugins import PluginURLs
-
-from .constants import ProjectType, SettingsType
+from edx_django_utils.plugins import PluginSettings, PluginURLs
+from openedx.core.djangoapps.plugins.constants import (
+    ProjectType,
+    SettingsType,
+    PluginSignals,
+)
 # from django.contrib.admin.apps import AdminConfig
 # from django.contrib.auth.models import User
 # from django.db.models.signals import post_save
@@ -21,18 +24,23 @@ class LektoriumMainConfig(AppConfig):
 
     name = 'lektorium_main'
     verbose_name = 'Lektorium main app'
+    label = "lektorium_main"
+    app_label = "lektorium_main"
+
     plugin_app = {
         PluginURLs.CONFIG: {
             ProjectType.LMS: {
-                PluginURLs.NAMESPACE: 'lektorium_main',
+                PluginURLs.NAMESPACE: name,
+                PluginURLs.REGEX: "^lektorium_main/",
                 PluginURLs.RELATIVE_PATH: 'urls',
+                PluginURLs.APP_NAME: name
             }
         },
-       'settings_config': {
+       PluginSettings.CONFIG: {
             ProjectType.LMS: {
-                SettingsType.PRODUCTION : { 'relative_path': 'settings' },
-                SettingsType.COMMON: { 'relative_path': 'settings' },
-                SettingsType.DEVSTACK: { 'relative_path': 'settings' },
+                SettingsType.PRODUCTION : { PluginSettings.RELATIVE_PATH: 'settings.common' },
+                SettingsType.COMMON: { PluginSettings.RELATIVE_PATH: 'settings.common' },
+                SettingsType.DEVSTACK: { PluginSettings.RELATIVE_PATH: 'settings.common' },
             }
         }
     }
@@ -46,7 +54,7 @@ class LektoriumMainConfig(AppConfig):
 
 
     def _enable_lek_main(self):
-        from lektorium_main import settings as auth_settings
+        from lektorium_main.settings.common import settings as auth_settings
         auth_settings.apply_settings(settings)
 
 # class LEKTAdminConfig(apps.AdminConfig):

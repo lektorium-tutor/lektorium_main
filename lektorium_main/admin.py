@@ -21,6 +21,7 @@ from lektorium_main.tilda.models import TildaArticle
 
 class LEKTAdminSite(admin.AdminSite):
     site_header = _('LEKT administration')
+    app_label = "lektorium_main"
 
 
 lekt_admin_site = LEKTAdminSite(name='lekt_admin')
