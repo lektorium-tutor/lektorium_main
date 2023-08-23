@@ -19,12 +19,12 @@ from lektorium_main.statistics.models import EducontStatisticsItem, Transaction,
 from lektorium_main.tilda.models import TildaArticle
 
 
-class LEKTAdminSite(admin.AdminSite):
-    site_header = _('LEKT administration')
-    app_label = "lektorium_main"
+# class LEKTAdminSite(admin.AdminSite):
+#     site_header = _('LEKT administration')
+#     app_label = "lektorium_main"
 
 
-lekt_admin_site = LEKTAdminSite(name='lekt_admin')
+# lekt_admin_site = LEKTAdminSite(name='lekt_admin')
 
 User = get_user_model()
 
@@ -34,7 +34,7 @@ except NotRegistered:
     pass
 
 
-@admin.register(User, site=lekt_admin_site)
+@admin.register(User)
 class UserAdmin(BaseUserAdmin):
     save_on_top = True
     search_fields = ('email', 'username')
@@ -43,7 +43,7 @@ class UserAdmin(BaseUserAdmin):
         return ['-date_joined']
 
 
-@admin.register(StudentProfile, site=lekt_admin_site)
+@admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail')
@@ -51,7 +51,7 @@ class StudentProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user", ]
 
 
-@admin.register(TeacherProfile, site=lekt_admin_site)
+@admin.register(TeacherProfile)
 class TeacherProfileAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('fullName', 'email', 'user', 'isActive', 'statusConfirmEmail')
@@ -59,23 +59,23 @@ class TeacherProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ["user", ]
 
 
-@admin.register(EducationalInstitution, site=lekt_admin_site)
+@admin.register(EducationalInstitution)
 class EducationalInstitutionAdmin(admin.ModelAdmin):
     list_display = ('shortName',)
 
 
 #
-# @admin.register(EducationalInstitutions, site=lekt_admin_site)
+# @admin.register(EducationalInstitutions)
 # class EducationalInstitutionsAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'approvedStatus', 'isActual',)
 
 
-@admin.register(StatusMessage, site=lekt_admin_site)
+@admin.register(StatusMessage)
 class StatusMessageAdmin(admin.ModelAdmin):
     list_display = ('status_type', 'message',)
 
 
-@admin.register(Tag, site=lekt_admin_site)
+@admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name',)
     search_fields = ('name', 'parent__name')
@@ -106,7 +106,7 @@ def create_educont_objects(modeladmin, request, queryset):
         course.create_educont_objects()
 
 
-@admin.register(Course, site=lekt_admin_site)
+@admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):  # PolymorphicParentModelAdmin):
     list_display = ('courseName', 'externalId',)
     search_fields = ('courseName', 'externalId')
@@ -115,7 +115,7 @@ class CourseAdmin(admin.ModelAdmin):  # PolymorphicParentModelAdmin):
     # polymorphic_list = True
 
 
-@admin.register(COK, site=lekt_admin_site)
+@admin.register(COK)
 class COKAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('courseName', 'externalLink', 'courseDescription')
@@ -169,7 +169,7 @@ class COKAdmin(admin.ModelAdmin):
             return format_html("<pre>\nNone\n</pre>")
 
 
-@admin.register(Section, site=lekt_admin_site)
+@admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('externalId', 'courseName')
@@ -179,7 +179,7 @@ class SectionAdmin(admin.ModelAdmin):
     ordering = ['order']
 
 
-@admin.register(Topic, site=lekt_admin_site)
+@admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('externalId', 'courseName')
@@ -188,7 +188,7 @@ class TopicAdmin(admin.ModelAdmin):
     ordering = ['order']
 
 
-@admin.register(TeachingMaterial, site=lekt_admin_site)
+@admin.register(TeachingMaterial)
 class TeachingMaterialAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('externalId', 'courseName', 'tags_display')
@@ -204,7 +204,7 @@ class TeachingMaterialAdmin(admin.ModelAdmin):
     tags_display.short_description = "Теги"
 
 
-@admin.register(EducontStatisticsItem, site=lekt_admin_site)
+@admin.register(EducontStatisticsItem)
 class EducontStatisticsItemAdmin(admin.ModelAdmin):
     list_display = ('statisticType', 'externalId', 'status', 'profileId', 'createdAt')
     list_filter = ('statisticType', 'status')
@@ -215,19 +215,19 @@ class TransactionErrorMessageInline(admin.TabularInline):
     model = TransactionErrorMessage
 
 
-@admin.register(Transaction, site=lekt_admin_site)
+@admin.register(Transaction)
 class TransactionAdmin(SimpleHistoryAdmin):
     list_display = ('id', 'status', 'created', 'modified')
     history_list_display = ('status',)
     inlines = [TransactionErrorMessageInline, ]
 
 
-@admin.register(BlockCompletion, site=lekt_admin_site)
+@admin.register(BlockCompletion)
 class BlockCompletionAdmin(admin.ModelAdmin):
     list_display = ('user', 'block_key')
 
 
-@admin.register(TildaArticle, site=lekt_admin_site)
+@admin.register(TildaArticle)
 class TildaArticleAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('course_id', )
