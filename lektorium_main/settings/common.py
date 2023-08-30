@@ -57,7 +57,12 @@ sentry_sdk.init(
 )
 
 def plugin_settings(settings):
-    pass
+    settings.OPEN_EDX_FILTERS_CONFIG["org.openedx.learning.course_about.render.started.v1"] = {
+                "fail_silently": False,
+                "pipeline": [
+                    "lektorium_main.tilda.pipeline.RenderAlternativeCourseAbout"
+                ]
+            }
     
 # SOCIAL_AUTH_PIPELINE = ['lektorium_main.oauth2.pipeline.profile.save_profile', ]
 
