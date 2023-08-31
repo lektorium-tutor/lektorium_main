@@ -12,3 +12,4 @@ sentry-sdk
 edx-django-utils
 beautifulsoup4
 openedx-filters @ git+https://github.com/openedx/openedx-filters.git@MJG/instructor-tab-filters
+django-crum

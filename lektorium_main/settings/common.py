@@ -3,6 +3,7 @@ import logging
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from lektorium_main import ROOT_DIRECTORY
 
 
 def apply_settings(django_settings):
@@ -57,6 +58,10 @@ sentry_sdk.init(
 )
 
 def plugin_settings(settings):
+    settings.MAKO_TEMPLATE_DIRS_BASE.append(ROOT_DIRECTORY / "templates")
+    
+    settings.OPEN_EDX_FILTERS_CONFIG = getattr(settings, "OPEN_EDX_FILTERS_CONFIG", {})
+    
     settings.OPEN_EDX_FILTERS_CONFIG["org.openedx.learning.course_about.render.started.v1"] = {
                 "fail_silently": False,
                 "pipeline": [

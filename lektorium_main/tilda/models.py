@@ -47,7 +47,10 @@ class TildaArticle(models.Model):
         
     @classmethod
     def get_latest_object(cls, course_id):
-        return cls.objects.filter(course_id=course_id).latest('id')
+        try:
+            return cls.objects.filter(course_id=course_id).latest('id')
+        except cls.DoesNotExist:
+            return None
 
     def import_archive(self):
         """Распаковать и импортировать загруженный в `archive` файл из Тильды"""
