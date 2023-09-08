@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import zipfile
-
+from bs4 import BeautifulSoup
 
 class TildaArchive(object):
     def __init__(self, path):
@@ -21,8 +21,8 @@ class TildaArchive(object):
         with zipfile.ZipFile(self.path) as zf:
             for zipinfo in zf.infolist():
                 # парсинг контента
-                # with zf.open(zipinfo) as f:
-                #     self.content(zipinfo, f)
+                with zf.open(zipinfo) as f:
+                    self.content(zipinfo, f)
 
                 # распаковка
                 with zf.open(zipinfo) as f:
@@ -34,7 +34,7 @@ class TildaArchive(object):
         tilda_page = self.prepare_html()
         with open(self.get_full_path_tildapage(), 'w') as file:
             file.write(tilda_page)
-            # self.done()
+            self.done()
 
     def save(self, source, targetpath):
         # Create all upper directories if necessaryd
@@ -59,34 +59,45 @@ class IrkruTildaArchive(TildaArchive):
         self.extract_root = material.tilda_extract_root
         self.extract_url = material.tilda_extract_url
 
-    # def content(self, zipinfo, f):
-    #     """
-    #     Из html-файла парсит ссылки на стили и скрипты
-    #     """
-    #     filename = self.strip_project(zipinfo.filename)
+    def content(self, zipinfo, f):
+        """
+        Из html-файла парсит ссылки на стили и скрипты
+        """
+        filename = self.strip_project(zipinfo.filename)
 
-    #     if re.match(r'page\d+.html', filename):
-    #         html = f.read().decode('utf-8')
-    #         self.styles, self.scripts = self.assets(html)
-    #     elif re.match(r'files/page\d+body.html', filename):
-    #         self.body = f.read().decode('utf-8')
+        if re.match(r'page\d+.html', filename):
+            html = f.read().decode('utf-8')
+            self.styles, self.scripts = self.assets(html)
+        elif re.match(r'files/page\d+body.html', filename):
+            soup = BeautifulSoup(f.read().decode('utf-8'), 'html.parser')
+            parent_tag = soup.find("div", {"class": "tilda_course_about_button"})
+            general_tag = parent_tag.div
+            t = soup.new_tag('include-xxx')
+            general_tag.replaceWith(t)
+            
+            s = str(soup).replace("<include-xxx></include-xxx>", "<%include file='lektorium_main/_enroll_button.html' args='is_authenticated=is_authenticated, show_courseware_link=show_courseware_link, is_course_full=is_course_full, invitation_only=invitation_only, can_enroll=can_enroll, is_shib_course=is_shib_course, allow_anonymous=allow_anonymous, show_courseware_link=show_courseware_link, ecommerce_checkout=ecommerce_checkout, ecommerce_checkout_link=ecommerce_checkout_link' />")
+            self.body = s
 
-    # def done(self):
-    #     """
-    #     Вызывается после обработки всех файлов
-    #     """
-    #     if self.styles:
-    #         self.material.styles = '\n'.join(self.styles)
+    def done(self):
+        """
+        Вызывается после обработки всех файлов
+        """
+        if self.styles:
+            self.material.styles = '\n'.join(self.styles)
 
-    #     if self.scripts:
-    #         self.material.scripts = '\n'.join(self.scripts)
+        if self.scripts:
+            self.material.scripts = '\n'.join(self.scripts)
 
-    #     if self.body:
-    #         self.material.tilda_content = self.body
+        if self.body:
+            self.material.tilda_content = self.body
 
-    #     self.material.save()
+        self.material.save()
+        
     def prepare_content(self, html):
         """Возвращает готовый к выводу хтмл"""
+        # soup = BeautifulSoup(tilda_page, 'html.parser')
+        # parent_tag = soup.find("div", {"class": "tilda_course_about_button"})
+        
         result = html.replace('="images/', '="{}images/'.format(self.extract_url))
         result = result.replace("url('images/", "url('{}images/".format(self.extract_url))
         result = result.replace("js/jquery-1.10.2.min.js", "")
@@ -120,17 +131,17 @@ class IrkruTildaArchive(TildaArchive):
             path = os.path.join(self.extract_root, re.sub(r'project\d+/', './', zipinfo.filename).lstrip('/'))
         return path
 
-    # @staticmethod
-    # def assets(html):
-    #     styles, scripts = None, None
+    @staticmethod
+    def assets(html):
+        styles, scripts = None, None
 
-    #     link_pattern = re.compile(r'''<link[^>]+rel=["']stylesheet["'].+?>''')
-    #     styles = link_pattern.findall(html)
+        link_pattern = re.compile(r'''<link[^>]+rel=["']stylesheet["'].+?>''')
+        styles = link_pattern.findall(html)
 
-    #     link_pattern = re.compile(r'''<script\s+src=["'].+?></script>''')
-    #     scripts = link_pattern.findall(html)
+        link_pattern = re.compile(r'''<script\s+src=["'].+?></script>''')
+        scripts = link_pattern.findall(html)
 
-    #     return styles, scripts
+        return styles, scripts
 
     @staticmethod
     def strip_project(filename):

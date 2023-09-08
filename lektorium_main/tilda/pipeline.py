@@ -69,62 +69,23 @@ class RenderAlternativeCourseAbout(PipelineStep):
             'disable_footer': True
         }
         """
-        request = crum.get_current_request()
-        registered = context['registered']
-        show_courseware_link = context['show_courseware_link']
-        course_target = context['course_target']
-        is_course_full = context['is_course_full']
-        invitation_only = context['invitation_only']
-        can_enroll = context['can_enroll']
-        is_shib_course = context['is_shib_course']
-        allow_anonymous = context['allow_anonymous']
         course = context['course']
         context['disable_courseware_header'] = False
         article = TildaArticle.get_latest_object(course_id=course.id)
         if not article:
             raise CourseAboutRenderStarted.RenderInvalidCourseAbout(message="Tilda Article not found", course_about_template='static_templates/404.html')
         elif article:
-            tilda_page = article.get_page()
-            soup = BeautifulSoup(tilda_page, 'html.parser')
+            tilda_page = article.get_full_path()
             
-            parent_tag = soup.find("div", {"class": "tilda_course_about_button"})
-            general_tag = parent_tag.div
-            if registered:
-                if show_courseware_link:
-                    new_tag = soup.new_tag('a', attrs={'href': course_target, 'class': 'tn-atom'})
-                    new_tag.string = _tr("View Course")
-                    general_tag.replaceWith(new_tag)
-            elif is_course_full:
-                new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-                new_tag.string = _tr("Course is full")
-                general_tag.replaceWith(new_tag)
-            elif invitation_only and not can_enroll:
-                new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-                new_tag.string = _tr("Enrollment in this course is by invitation only")          
-                general_tag.replaceWith(new_tag)
-            elif not is_shib_course and not can_enroll:
-                new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-                new_tag.string = _tr("Enrollment is Closed")
-                general_tag.replaceWith(new_tag)
-            elif allow_anonymous:
-                if show_courseware_link:
-                    new_tag = soup.new_tag('a', attrs={'href': course_target, 'class': 'tn-atom'})
-                    new_tag.string = _tr("View Course")
-                    general_tag.replaceWith(new_tag)
-            else:
-                new_tag = soup.new_tag('a', attrs={'href': '#', 'class': "register tn-atom"})
-                new_tag.string = _tr("Enroll now")
-                register_error = soup.new_tag('div', id='register_error')
-                general_tag.replaceWith(new_tag)
-                new_tag.insert_after(register_error)
-            result_page = soup.prettify( formatter="html" )
+            # soup = BeautifulSoup(tilda_page, 'html.parser')
+            # result_page = soup.prettify( formatter="html" )
             context['disable_footer'] = True
-            context['result_page'] = result_page
+            context['result_page'] = tilda_page
             # template = Template(result_page)
             # html = template.render(Context(context))
             # frag = Fragment(result_page)
             template_name = 'lektorium_main/course_about_tilda_v2.html'
-            template = Template(template_name)
-            html = template.render(Context(context))
+            # template = Template(template_name)
+            # html = template.render(Context(context))
             # frag.add_css(self.resource_string("static/css/ontask.css"))
-            return {"context": context, "template_name": html }
+            return {"context": context, "template_name": template_name }

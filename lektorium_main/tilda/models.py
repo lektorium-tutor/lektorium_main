@@ -65,6 +65,19 @@ class TildaArticle(models.Model):
                 full_path = (path + filename)
                 HtmlFile = open(full_path, "r")
                 return HtmlFile.read()
+            
+    def get_full_path(self):
+        path = self.tilda_extract_root
+        for filename in os.listdir(path):
+            if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
+                full_path = (path + filename)
+                return full_path.replace('/openedx', '')
+            
+    def prepare_content(self):
+        """Возвращает готовый к выводу хтмл"""
+        result = self.tilda_content.replace('="images/', '="{}images/'.format(self.tilda_extract_url))
+        result = result.replace("url('images/", "url('{}images/".format(self.tilda_extract_url))
+        return result
     
     def if_exists_course(self):
         course_key = CourseKey.from_string(self.course_id)

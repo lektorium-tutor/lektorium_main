@@ -163,39 +163,7 @@ def course_about(request, course_id):  # pylint: disable=too-many-statements
 
         article = TildaArticle.get_latest_object(course_id=course.id)
         tilda_page = article.get_page()
-        soup = BeautifulSoup(tilda_page, 'html.parser')
         
-        parent_tag = soup.find("div", {"class": "tilda_course_about_button"})
-        general_tag = parent_tag.div
-        if request.user.is_authenticated and registered:
-            if show_courseware_link:
-                new_tag = soup.new_tag('a', attrs={'href': course_target, 'class': 'tn-atom'})
-                new_tag.string = _tr("View Course")
-                general_tag.replaceWith(new_tag)
-        elif is_course_full:
-            new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-            new_tag.string = _tr("Course is full")
-            general_tag.replaceWith(new_tag)
-        elif invitation_only and not can_enroll:
-            new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-            new_tag.string = _tr("Enrollment in this course is by invitation only")          
-            general_tag.replaceWith(new_tag)
-        elif not is_shib_course and not can_enroll:
-            new_tag = soup.new_tag('span', attrs={'class': 'register disabled tn-atom'})
-            new_tag.string = _tr("Enrollment is Closed")
-            general_tag.replaceWith(new_tag)
-        elif allow_anonymous:
-            if show_courseware_link:
-                new_tag = soup.new_tag('a', attrs={'href': course_target, 'class': 'tn-atom'})
-                new_tag.string = _tr("View Course")
-                general_tag.replaceWith(new_tag)
-        else:
-            new_tag = soup.new_tag('a', attrs={'href': '#', 'class': "register tn-atom"})
-            new_tag.string = _tr("Enroll now")
-            register_error = soup.new_tag('div', id='register_error')
-            general_tag.replaceWith(new_tag)
-            new_tag.insert_after(register_error)
-        result_page = soup.prettify( formatter="html" )
         context = {
             'course': course,
             'course_details': course_details,
@@ -222,7 +190,6 @@ def course_about(request, course_id):  # pylint: disable=too-many-statements
             'course_image_urls': overview.image_urls,
             'sidebar_html_enabled': sidebar_html_enabled,
             'allow_anonymous': allow_anonymous,
-            'tilda_page': result_page,
             'disable_footer': True
         }
         
