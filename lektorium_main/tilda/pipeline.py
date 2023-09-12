@@ -75,12 +75,15 @@ class RenderAlternativeCourseAbout(PipelineStep):
         if not article:
             raise CourseAboutRenderStarted.RenderInvalidCourseAbout(message="Tilda Article not found", course_about_template='static_templates/404.html')
         elif article:
-            tilda_page = article.get_full_path()
-            
+            tilda_body = article.get_page()
+            tilda_styles = article.styles
+            tilda_scripts = article.scripts
             # soup = BeautifulSoup(tilda_page, 'html.parser')
             # result_page = soup.prettify( formatter="html" )
             context['disable_footer'] = True
-            context['result_page'] = tilda_page
+            context['tilda_body'] = tilda_body
+            context['tilda_styles'] = tilda_styles
+            context['tilda_scripts'] = tilda_scripts
             # template = Template(result_page)
             # html = template.render(Context(context))
             # frag = Fragment(result_page)

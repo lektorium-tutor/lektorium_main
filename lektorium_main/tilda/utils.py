@@ -104,7 +104,15 @@ class IrkruTildaArchive(TildaArchive):
         result = result.replace('src="js/', 'src="{}js/'.format(self.extract_url))
         result = result.replace('href="css/', 'href="{}css/'.format(self.extract_url))
         result = result.replace("data-original='images/", "data-original='{}images/".format(self.extract_url))
-        return result
+        soup = BeautifulSoup(result, 'html.parser')
+        parent_tag = soup.find("div", {"class": "tilda_course_about_button"})
+        general_tag = parent_tag.div
+        t = soup.new_tag('include-xxx')
+        general_tag.replaceWith(t)    
+        s = str(soup).replace("<include-xxx></include-xxx>", "<%include file='lektorium_main/_enroll_button.html' args='is_authenticated=is_authenticated, show_courseware_link=show_courseware_link, is_course_full=is_course_full, invitation_only=invitation_only, can_enroll=can_enroll, is_shib_course=is_shib_course, allow_anonymous=allow_anonymous, show_courseware_link=show_courseware_link, ecommerce_checkout=ecommerce_checkout, ecommerce_checkout_link=ecommerce_checkout_link' />")
+        # self.body = s
+        
+        return s
 
     def prepare_html(self):
         path = self.extract_root

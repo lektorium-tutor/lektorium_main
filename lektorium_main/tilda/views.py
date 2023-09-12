@@ -163,6 +163,7 @@ def course_about(request, course_id):  # pylint: disable=too-many-statements
 
         article = TildaArticle.get_latest_object(course_id=course.id)
         tilda_page = article.get_page()
+        # soup = BeautifulSoup(tilda_page, 'html.parser')
         
         context = {
             'course': course,
@@ -190,23 +191,24 @@ def course_about(request, course_id):  # pylint: disable=too-many-statements
             'course_image_urls': overview.image_urls,
             'sidebar_html_enabled': sidebar_html_enabled,
             'allow_anonymous': allow_anonymous,
-            'disable_footer': True
+            'disable_footer': True,
+            'tilda_page': tilda_page
         }
         
         course_about_template = 'lektorium_main/course_about_tilda.html'
-        try:
-            # .. filter_implemented_name: CourseAboutRenderStarted
-            # .. filter_type: org.openedx.learning.course_about.render.started.v1
-            context, course_about_template = CourseAboutRenderStarted.run_filter(
-                context=context, template_name=course_about_template,
-            )
-        except CourseAboutRenderStarted.RenderInvalidCourseAbout as exc:
-            response = render(request, exc.course_about_template, exc.template_context)
-        except CourseAboutRenderStarted.RedirectToPage as exc:
-            raise CourseAccessRedirect(exc.redirect_to or reverse('dashboard')) from exc
-        except CourseAboutRenderStarted.RenderCustomResponse as exc:
-            response = exc.response or render(request, course_about_template, context)
-        else:
-            response = render(request, course_about_template, context)
+        # try:
+        #     # .. filter_implemented_name: CourseAboutRenderStarted
+        #     # .. filter_type: org.openedx.learning.course_about.render.started.v1
+        #     context, course_about_template = CourseAboutRenderStarted.run_filter(
+        #         context=context, template_name=course_about_template,
+        #     )
+        # except CourseAboutRenderStarted.RenderInvalidCourseAbout as exc:
+        #     response = render(request, exc.course_about_template, exc.template_context)
+        # except CourseAboutRenderStarted.RedirectToPage as exc:
+        #     raise CourseAccessRedirect(exc.redirect_to or reverse('dashboard')) from exc
+        # except CourseAboutRenderStarted.RenderCustomResponse as exc:
+        #     response = exc.response or render(request, course_about_template, context)
+        # else:
+        response = render(request, course_about_template, context)
 
         return response

@@ -71,7 +71,7 @@ class TildaArticle(models.Model):
         for filename in os.listdir(path):
             if os.path.isfile(os.path.join(path, filename)) and 'page' in filename:
                 full_path = (path + filename)
-                return full_path.replace('/openedx', '')
+                return full_path.replace('/openedx/media/tilda/lektorium_main', '')
             
     def prepare_content(self):
         """Возвращает готовый к выводу хтмл"""

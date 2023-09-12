@@ -54,7 +54,7 @@ from openedx.core.lib.courses import course_image_url
 
 <%block name="pagetitle">${course.display_name_with_default}</%block>
 
-<%include file="${ result_page }" />
+${ tilda_body | n }
 
 ## Need to put this hidden form on the page so that the registration button works.
 ## Since it's no harm to display a hidden form, we display it with the most permissive conditional
