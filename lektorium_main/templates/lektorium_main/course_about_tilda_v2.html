@@ -1,5 +1,8 @@
 <%page expression_filter="h"/>
+<%! main_css = "style-main-v1" %>
 <%namespace name='static' file='../static_content.html'/>
+<% online_help_token = self.online_help_token() if hasattr(self, 'online_help_token') else None %>
+<% is_authenticated = ${is_authenticated} %>
 <%!
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
@@ -11,8 +14,37 @@ from openedx.core.djangolib.js_utils import js_escaped_string
 from openedx.core.djangolib.markup import clean_dangerous_html, HTML, Text
 from openedx.core.lib.courses import course_image_url
 %>
+<!DOCTYPE html>
+<%static:css group='style-vendor'/>
+% if '/' in self.attr.main_css:
+  % if get_language_bidi():
+    <%
+    rtl_css_file = self.attr.main_css.replace('.css', '-rtl.css')
+    %>
+    <link rel="stylesheet" href="${str(static.url(rtl_css_file))}" type="text/css" media="all" />
+  % else:
+    <link rel="stylesheet" href="${static.url(self.attr.main_css)}" type="text/css" media="all" />
+  % endif
+% else:
+  <%static:css group='${self.attr.main_css}'/>
+% endif
 
-<%inherit file="../main.html" />
+% if disable_courseware_js:
+  <%static:js group='base_vendor'/>
+  <%static:js group='base_application'/>
+% else:
+  <%static:js group='main_vendor'/>
+  <%static:js group='application'/>
+% endif
+
+<%static:webpack entry="commons"/>
+
+% if uses_bootstrap:
+  ## xss-lint: disable=mako-invalid-js-filter
+  <script type="text/javascript" src="${static.url('common/js/vendor/bootstrap.bundle.js')}"></script>
+% endif
+</head>
+
 <%block name="headextra">
   ## OG (Open Graph) title and description added below to give social media info to display
   ## (https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content#tags)
@@ -21,6 +53,10 @@ from openedx.core.lib.courses import course_image_url
 </%block>
 
 <%block name="js_extra">
+  <script type="text/javascript" src="${static.url('js/vendor/noreferrer.js')}" charset="utf-8"></script>
+  <script type="text/javascript" src="${static.url('js/utils/navigation.js')}" charset="utf-8"></script>
+  <script type="text/javascript" src="${static.url('js/header/header.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/src/jquery_extend_patch.js')}"></script>
   <script type="text/javascript">
   (function() {
     $(".register").click(function(event) {
@@ -54,7 +90,13 @@ from openedx.core.lib.courses import course_image_url
 
 <%block name="pagetitle">${course.display_name_with_default}</%block>
 
+<%include file="../header.html" args="online_help_token=online_help_token" />
+<%include file="/preview_menu.html" />
+
+<body class="${static.dir_rtl()} <%block name='bodyclass'/> lang_${LANGUAGE_CODE}">
+<%include file='_enroll_button.html' args='is_authenticated=is_authenticated, show_courseware_link=show_courseware_link, is_course_full=is_course_full, invitation_only=invitation_only, can_enroll=can_enroll, is_shib_course=is_shib_course, allow_anonymous=allow_anonymous, show_courseware_link=show_courseware_link, ecommerce_checkout=ecommerce_checkout, ecommerce_checkout_link=ecommerce_checkout_link' />
 ${ tilda_body | n }
+</body>
 
 ## Need to put this hidden form on the page so that the registration button works.
 ## Since it's no harm to display a hidden form, we display it with the most permissive conditional
@@ -79,3 +121,4 @@ ${ tilda_body | n }
 <%static:require_module_async module_name="js/dateutil_factory" class_name="DateUtilFactory">
     DateUtilFactory.transform(iterationKey=".localized_datetime");
 </%static:require_module_async>
+</html>
